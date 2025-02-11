@@ -1,0 +1,42 @@
+
+#############
+# The Model #
+#############
+
+### workspace model wrapper ###
+mymodel = model(rate_matrix)
+
+### set up the monitors that will output parameter values to file and screen 
+monitors.append( mnModel(filename= out_fp + base_str + ".model.log", printgen=100))
+monitors.append( mnJointConditionalAncestralState(tree=timetree, cdbdp=timetree, type="NaturalNumbers", printgen=100, withTips=true, withStartStates=false, filename=out_fp + base_str + ".states.log"))
+monitors.append( mnStochasticCharacterMap(cdbdp=timetree,
+                       filename=out_fp + base_str + "stoch.log",
+                       printgen=100,  include_simmap=true) )
+
+monitors.append(mnScreen(printgen=10, transition_rates, R[1]))
+
+
+
+
+################
+# The Analysis #
+################
+
+### workspace mcmc
+mymcmc = mcmc(mymodel, monitors, moves, nruns=2, moveschedule="random")
+
+### pre-burnin to tune the proposals
+#mymcmc.burnin(generations=20000,tuningInterval=200)
+
+### run the MCMC
+mymcmc.initializeFromCheckpoint(out_fp + base_str  + ".model.state")
+mymcmc.run(generations=250000, checkpointInterval=100, tuningInterval=200, checkpointFile=out_fp+ base_str +".model.state", underPrior=false)
+
+anc_states = readAncestralStateTrace(out_fp + base_str + ".states_run_1.log")
+anc_tree = ancestralStateTree(tree=start_tre, ancestral_state_trace_vector=anc_states, include_start_states=false, file=out_fp + base_str + "_ase.tre", burnin=0.2, summary_statistic="MAP", site=1)
+
+
+q()
+
+
+

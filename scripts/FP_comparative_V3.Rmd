@@ -1,0 +1,2607 @@
+---
+title: |
+  | "Code for:
+  **Ecology and sexual conflict drive the macroevolutionary dynamics of female-limited colour polymorphisms**"
+author: "Beatriz Willink"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: united
+    highlight: tango
+    number_sections: false
+    toc: true
+    toc_float: true
+bibliography: Morph_supporting.bib
+citation-style: sysbio.csl
+link-citations: true
+---
+This documents describes the analyses conducted by Willink *et al.* (2024) to investigate the macroevolutionary dynamics of female-limited colour polymorphisms (FP) in pond damselflies (Coenagrionoidae).
+
+Load packages
+```{r load-packages, message=FALSE, results='hide', warning=FALSE}
+x <-
+  c(
+    "tidyverse",
+    "ggplot2",
+    "wesanderson",
+    "coda",
+    "ape",
+    "convenience",
+    "geiger",
+    "ggtree",
+    "gridExtra",
+    "treeio",
+    "phangorn",
+    "phytools",
+    "RevGadgets",
+    "kableExtra",
+    "MCMCglmm", 
+    "MASS"
+  )
+
+lapply(x, function(y) {
+  # check if installed, if not install
+  if (!y %in% installed.packages()[, "Package"])
+    install.packages(y)
+  
+  # load package
+  try(require(y, character.only = T), silent = T)
+})
+```
+
+# Data preparation
+
+## Tree pruning
+We based our analysis on the MAP tree of Willink *et al.* [-@willink2022tropical]. This tree includes both pond damselflies (Coenagrionidae) and featherlegs (Platycnemididae). I'm not aware of any instance of FP in featherlegs after searching all species in Willink *et al.* [-@willink2022tropical]. So for this study we'll focus only on pond damselflies.
+
+I start by pruning the tree in Willink *et al.* [-@willink2022tropical] to leave only pond damselfly taxa with sex-related colour data.
+
+```{r prune-tree, echo=TRUE, eval=TRUE}
+# read the tree
+tre <- read.nexus("../data/phylogeny/G1_beta_strong.673464_MAP.tree")
+
+# read character data
+femdat <- read.csv("../data/processed/HiSSE/Fem_colour.csv", header = T, sep = ",")
+
+# filter missing data
+femdat <- femdat[femdat$State != "-",]
+
+# check names in data and tree match
+missing_taxa <- name.check(tre, femdat, femdat$Taxon)
+
+# drop tips with missing character data
+tre <- ape::drop.tip(tre, missing_taxa$tree_not_data)
+
+# get featherleg ancestor
+featherleg <- findMRCA(tre, c("Elattoneura_caesia", "Arabicnemis_caerulea"))
+
+# drop featherlegs from tree
+tre <- ape::drop.tip(tre, Descendants(tre, featherleg, type = "tips")[[1]])
+
+# filter featherlegs from character data
+feather_taxa <- name.check(tre, femdat, femdat$Taxon)
+femdat <- femdat[!(femdat$Taxon %in% feather_taxa$data_not_tree),]
+
+# write pruned tree
+#write.nexus(tre, file = "../data/processed/HiSSE/Willink_MAP_coen.tree", translate = F)
+
+# write filtered character data
+#write.table(femdat, file = "../data/processed/HiSSE/Fem_colour_coen.csv", quote = F, row.names = F, sep = "\t")
+```
+
+## Summary of the character state data
+
+For starters, I'd like to know how many species we have in each category.
+
+```{r char_summ, eval=TRUE}
+# read the final data
+sta <- read.table(file = "../data/processed/HiSSE/Fem_colour_coen.csv", header = T, sep = "\t")
+
+sta_summ <-
+  data.frame(
+    state = c("SM", "SD", "FP", "missing", "Total"),
+    ntaxa = c(
+      length(sta$State[sta$State == "0"]),
+      length(sta$State[sta$State == "2"]),
+      length(sta$State[sta$State == "1"]),
+      length(sta$State[sta$State == "-"]),
+      length(sta$State)
+    )
+  )
+
+sta_summ %>% 
+  kbl() %>%
+  kable_material(c("striped", "hover"), full_width = F)
+```
+
+# Transition rates and diversification
+We used a Hidden-State Speciation and Extinction (HiSSE) model to simultaneously infer transition rates between sex-related colour states and the effects of sexual dimorphism (SD) and female-limited colour polymorphisms (FP) on diversification dynamics.
+
+## Running the model
+The model was implemented on RevBayes v 1.1 [@Hoehna2016]. I ran two independent chains of this analysis. I did preliminary runs on UPPMAX. I ran the final model on my laptop, which has RevBayes installed via spack. 
+
+```{bash HiSSE model MAP, eval = FALSE}
+#!bin/bash
+#load RevBayes
+source ~/Applications/spack/share/setup-env.sh
+spack load revbayes /sum2kc5
+
+# run diversification analysis on pruned Coenagrionidae tree
+rb_command="source(\"./HiSSE/HiSSE_setup_MAP_pruned.Rev\");"
+echo $rb_command | rb
+```
+
+## Processing the output
+
+### Convergence assessments
+I used the convenience package to assess stationarity and convergence. While some ESS values fall under the 625 threshold in individual runs, the lowest from an individual run is 328 and the lowest ESS from the joint runs is 964. Moreover all parameter posteriors converge between the two chains.
+
+```{r convergence}
+check_HiSSE <- checkConvergence( list_files = c("../output/HiSSE/PolyHiSSE_MAP_coen_r1.model.log", "../output/HiSSE/PolyHiSSE_MAP_coen_r2.model.log"), control = makeControl(burnin=.10, precision = 0.01))
+
+check_HiSSE$message_complete
+
+printTableContinuous(check_HiSSE) 
+
+plotEssContinuous(check_HiSSE)
+plotKS(check_HiSSE)
+```
+
+### Run under prior
+
+I ran the same model without data, i.e. under the prior
+```{bash under-prior, eval=FALSE}
+#!bin/bash
+#load RevBayes
+source ~/Applications/spack/share/setup-env.sh
+spack load revbayes /sum2kc5
+
+# run diversification analysis on pruned Coenagrionidae tree
+rb_command="source(\"./HiSSE/HiSSE_setup_MAP_prior_pruned.Rev\");"
+echo $rb_command | rb
+```
+
+And quickly confirm that posterior transition and diversification rates match the priors
+
+```{r prior-check, warning=FALSE}
+# read posterior of run under prior
+pst <- read.table("~/Dropbox/Doctorado/COEN_Comparative/FP_Comparative/output/HiSSE/PolyHiSSE_MAP_coen_prior.model.log", header = T)
+
+# transitions
+# reshape to long
+prior_t <- pivot_longer(pst, cols = c(42:47), names_to = "Transition", values_to = "Rate")
+
+# get colour palette
+pal <- wes_palette("Zissou1", n = 6, type = "continuous")
+
+# plot rates
+p_t <- ggplot(prior_t,aes(x = Rate, fill = Transition)) +
+   theme_bw(base_size = 8) +
+  labs(x = "Transition rate", y = "Posterior frequency") +
+  geom_histogram(
+    binwidth = 0.0001,
+    linewidth = 0.5,
+    alpha = 0.6,
+    colour = "white",
+    position = "identity"
+  ) +
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE), color = NULL) +
+  #xlim(0, 1.0) +
+  scale_fill_manual(
+    values = pal) +
+  theme_minimal(base_size = 7) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+# speciation
+# reshape to long
+prior_s <- pivot_longer(pst, cols = c(28:33), names_to = "Speciation", values_to = "Rate")
+
+# plot rates
+p_s <- ggplot(prior_s,aes(x = Rate, fill = Speciation)) +
+   theme_bw(base_size = 8) +
+  labs(x = "Speciation rate", y = "Posterior frequency") +
+  geom_histogram(
+    bins=100,
+    linewidth = 0.5,
+    alpha = 0.6,
+    colour = "white",
+    position = "identity"
+  ) +
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE), color = NULL) +
+  xlim(-1, 99.0) +
+  scale_fill_manual(
+    values = pal) +
+  theme_minimal(base_size = 7) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+# extinction
+# reshape to long
+prior_e <- pivot_longer(pst, cols = c(5:10), names_to = "Extinction", values_to = "Rate")
+
+# plot rates
+p_e <- ggplot(prior_e,aes(x = Rate, fill = Extinction)) +
+   theme_bw(base_size = 8) +
+  labs(x = "Speciation rate", y = "Posterior frequency") +
+  geom_histogram(
+    bins=100,
+    linewidth = 0.5,
+    alpha = 0.6,
+    colour = "white",
+    position = "identity"
+  ) +
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE), color = NULL) +
+  xlim(-1, 99.0) +
+  scale_fill_manual(
+    values = pal) +
+  theme_minimal(base_size = 7) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+lay_matrix <- rbind(c(1,1),
+                c(2,3))
+
+grid.arrange(p_t, p_s, p_e, layout_matrix = lay_matrix)
+```
+
+### Ancestral states
+
+First, let's look at the ancestral state estimation. This is to get a sense of the history of sex-related colouration in pond damselflies, but not to address any specific hypothesis.
+
+Run the annotation on RevBayes
+```{bash tree-annotation, eval=FALSE}
+#!bin/bash
+#load RevBayes
+source ~/Applications/spack/share/setup-env.sh
+spack load revbayes /sum2kc5
+
+rb_command="source(\"./HiSSE/Annot_tree.Rev\");"
+echo $rb_command | rb
+```
+
+
+```{r ase, eval=TRUE, message=FALSE}
+# read the annotated tree - it doesn't matter which run we use
+stree_fn = "../output/HiSSE/PolyHiSSE_MAP_coen_r1_ase.tre"
+stree_fn = "../output/HiSSE/PolyHiSSE_MAP_coen_r2_ase.tre"
+
+# process ancestral states, here we focus on the colour trait only
+tre <- processAncStates(stree_fn, 
+                         state_labels = c("0" = "SM_1",
+                                          "1" = "FP_1",
+                                          "2" = "SD_1",
+                                          "3" = "SM_2",
+                                          "4" = "FP_2",
+                                          "5" = "SD_2"))
+# define colour palette
+st_colors = c( wes_palette("Zissou1", n = 12, type = "continuous")[c(12,12,7,7,1,1)], "white" )
+
+# plot tree with ancestral states as pies
+zz=plotAncStatesPie(t=tre,
+                          pie_colors=st_colors,
+                          node_labels_size=0,
+                          node_pie_size = 0.75,
+                          #node_pie_nudge=0.5,
+                          tip_pie_size=0.5,
+                          tip_pie_nudge_x = 1,
+                          node_pie_nudge_x = 0.5,
+                          tip_labels=FALSE,
+                          xlim=c(0,106),
+                          state_transparency = 0.75,
+                          layout="circular"
+                          )
+
+zz
+```
+
+For completeness, we can plot the ancestral states for the hidden trait that influences diversification dynamics.
+
+```{r hidden-ase, eval=TRUE, message=FALSE}
+
+# process ancestral states, here we focus on the colour trait only
+tre <- processAncStates(stree_fn, 
+                         state_labels = c("0" = "slow_FP",
+                                          "1" = "slow_SM",
+                                          "2" = "slow_SD",
+                                          "3" = "fast_FP",
+                                          "4" = "fast_SM",
+                                          "5" = "fast_SD"))
+# define colour palette
+st_colors = c( wes_palette("Zissou1", n = 12, type = "continuous")[c(12,12,12,1,1,1)], "white" )
+
+# plot tree with ancestral states as pies
+zx=plotAncStatesPie(t=tre,
+                          pie_colors=st_colors,
+                          node_labels_size=0,
+                          node_pie_size = 0.75,
+                          #node_pie_nudge=0.5,
+                          tip_pie_size=0.3,
+                          tip_pie_nudge_x = 0.75,
+                          node_pie_nudge_x = 0.5,
+                          tip_labels=FALSE,
+                          xlim=c(0,106),
+                          state_transparency = 0.75,
+                          layout="circular")
+zx
+
+#ggsave(plot = zx, filename = "~/Dropbox/Doctorado/COEN_Comparative/Writing/Figures/Hidden_rates.pdf", device = "pdf", width = 160, height = 160, units = "mm", dpi = 600)
+```
+
+### Transition rates
+Here's where we test the hypotheses. First, we want to know if FPs are more often descendants from SD lineages than SM lineages.
+
+```{r FP-origin, eval=TRUE}
+# read posterior
+Hmod1 <- read.table("../output/HiSSE/PolyHiSSE_MAP_coen_r1.model.log", header = T)
+Hmod2 <- read.table("../output/HiSSE/PolyHiSSE_MAP_coen_r2.model.log", header = T)
+
+# burn in the first 40,000 iterations and combine
+rdat <- rbind(Hmod1[401:4400,c(1,42:47)],Hmod2[401:4400,c(1,42:47)])
+
+# what's the fraction of the posterior in  which SM -> FP > SD -> FP
+sum(rdat$transition_rates.1. - rdat$transition_rates.6. > 0) / length(rdat$Iteration)
+
+# What's the mean and 95% HPD interval of the difference
+H1 <- data.frame(mean = mean(rdat$transition_rates.6. - rdat$transition_rates.1.),
+                 lwr = HPDinterval(mcmc((rdat$transition_rates.6. - rdat$transition_rates.1.)))[1],
+                 upr = HPDinterval(mcmc((rdat$transition_rates.6. - rdat$transition_rates.1.)))[2])
+
+H1 %>%
+kbl() %>%
+  kable_material(c("striped", "hover"), full_width = F)
+```
+
+We'll plot mean rates for all transitions in Fig 2.
+
+```{r transition-rates, eval=TRUE, message=FALSE, results='hide'}
+rdat %>% pivot_longer(cols = c(2:7), names_to = "Transition", values_to = "Rate") %>%
+  group_by(Transition) %>%
+  summarise(mean = mean(Rate))
+
+```
+
+We plot histograms of the transitions rates towards FP for Fig. 2c.
+
+```{r plot-FP-origin, eval=TRUE}
+# reshape to long
+rdat_long <- pivot_longer(rdat, cols = c(2,7), names_to = "Transition", values_to = "Rate")
+
+# get colour palette
+pal <- wes_palette("Zissou1", n = 12, type = "continuous")
+
+# plot rates
+p1 <- ggplot(rdat_long,aes(x = Rate, fill = Transition)) +
+   theme_bw(base_size = 8) +
+  labs(x = "Transition rate", y = "Posterior frequency") +
+  geom_histogram(
+    binwidth = 0.0004,
+    linewidth = 0.25,
+    alpha = 0.75,
+    colour = "grey20",
+    position = "identity"
+  ) +
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE), color = NULL) +
+  #xlim(0, 1.0) +
+  scale_fill_manual(
+  breaks = c("transition_rates.1.", "transition_rates.6."),
+    values = pal[c(1,7)],
+    labels = c(
+      "SM",
+      "SD"
+   ),
+    name = "Ancestor of FP"
+  ) +
+  theme_minimal(base_size = 7) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+p1
+```
+
+Second, we want to know whether SD or SM is the most common descendant of FP.
+
+```{r FP-loss, eval=TRUE}
+# read posterior
+# what's the fraction of the posterior in  which FP -> SM > FP -> SM
+sum(rdat$transition_rates.3. - rdat$transition_rates.4. > 0) / length(rdat$Iteration)
+
+# What's the mean and 95% HPD interval of the difference
+H2 <- data.frame(mean = mean(rdat$transition_rates.4. - rdat$transition_rates.3.),
+                 lwr = HPDinterval(mcmc((rdat$transition_rates.4. - rdat$transition_rates.3.)))[1],
+                 upr = HPDinterval(mcmc((rdat$transition_rates.4. - rdat$transition_rates.3.)))[2])
+
+H2 %>%
+kbl() %>%
+  kable_material(c("striped", "hover"), full_width = F)
+```
+
+We plot histograms of the transitions rates away FP for Fig. 2d
+
+```{r plot-FP-loss, eval=TRUE}
+# reshape to long
+rdat_long <- pivot_longer(rdat, cols = c(4,5), names_to = "Transition", values_to = "Rate")
+
+# get colour palette
+pal <- wes_palette("Zissou1", n = 12, type = "continuous")
+
+# plot rates
+p2 <- ggplot(rdat_long, aes(x = Rate, fill = Transition)) +
+   theme_bw(base_size = 8) +
+  labs(x = "Transition rate", y = "Posterior frequency") +
+  geom_histogram(
+    binwidth = 0.0004,
+    linewidth = 0.25,
+    alpha = 0.75,
+    colour = "grey20",
+    position = "identity"
+  ) +
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE), color = NULL) +
+  #xlim(0, 1.0) +
+  scale_fill_manual(
+  breaks = c("transition_rates.3.", "transition_rates.4."),
+    values = pal[c(1,7)],
+    labels = c(
+      "SM",
+      "SD"
+   ),
+    name = "Descendant of FP"
+  ) +
+  theme_minimal(base_size = 7) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+p2
+```
+
+Create multipanel figure
+
+```{r Fig2, eval=FALSE, echo = TRUE}
+lay_matrix <- rbind(c(1,1),
+                c(1,1),
+                c(2,3))
+
+Fig2 <- grid.arrange(zz, p1, p2, layout_matrix = lay_matrix)
+
+#ggsave("../../Writing/Figures/Fig2_V3.pdf", plot = Fig2, device = "pdf", units = "mm", width = 180, height = 160)
+```
+
+We plot histograms of the transitions rates between SD and SM for the Supporting Material
+
+```{r plot-SM-SD, eval=TRUE}
+# reshape to long
+rdat_long <- pivot_longer(rdat, cols = c(3,6), names_to = "Transition", values_to = "Rate")
+
+# get colour palette
+pal <- wes_palette("Zissou1", n = 12, type = "continuous")
+
+# plot rates
+p3 <- ggplot(rdat_long,aes(x = Rate, fill = Transition)) +
+   theme_bw(base_size = 8) +
+  labs(x = "Transition rate", y = "Posterior frequency") +
+  geom_histogram(
+    binwidth = 0.0004,
+    linewidth = 0.5,
+    alpha = 0.75,
+    colour = "white",
+    position = "identity"
+  ) +
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE), color = NULL) +
+  #xlim(0, 1.0) +
+  scale_fill_manual(
+  breaks = c("transition_rates.2.", "transition_rates.5."),
+    values = c("grey80", "grey20"),
+    labels = c(
+      "SM to SD",
+      "SD to SM"
+   ),
+    name = "Transition"
+  ) +
+  theme_minimal(base_size = 7) +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+p3
+
+#ggsave("../../Writing/Figures/SM_SD_transitions.pdf", plot = p3, device = "pdf", units = "mm", width = 120, height = 80)
+```
+
+### Events
+
+Stochastic character mapping allows us to estimate the number of events for each type of transition.
+
+```{r event-table, eval=TRUE}
+# it doesn't much matter which run we use
+events <- read.table("../output/HiSSE/PolyHiSSE_MAP_coen_r1_events.tsv", header = T)
+events <- read.table("../output/HiSSE/PolyHiSSE_MAP_coen_r2_events.tsv", header = T)
+
+SDtoFP <- events %>% 
+  filter(end_state == 1 | end_state == 4) %>% 
+  filter(start_state == 2 | start_state == 5) %>%
+  group_by(iteration) %>% summarise(n = sum(end_state))
+
+SMtoFP <- events %>% 
+  filter(end_state == 1 | end_state == 4) %>%
+  filter(start_state == 0 | start_state == 3) %>%
+  group_by(iteration) %>% summarise(n = sum(end_state))
+
+FPtoSD <- events %>% 
+  filter(end_state == 2 | end_state == 5) %>% 
+  filter(start_state == 1 | start_state == 5) %>%
+  group_by(iteration) %>% summarise(n = sum(end_state))
+
+FPtoSM <- events %>% 
+  filter(end_state == 2 | end_state == 5) %>%
+  filter(start_state == 1 | start_state == 4) %>%
+  group_by(iteration) %>% summarise(n = sum(end_state))
+
+FP_table <- data.frame(FP_transition = rep(c("gain", "loss"), each = 2), 
+                       from_to = rep(c("SD", "SM"),2),
+                       median = c(median(SDtoFP$n),
+                                  median(SMtoFP$n),
+                                  median(FPtoSD$n),
+                                  median(FPtoSM$n)),
+                       lwr = c(HPDinterval(mcmc(SDtoFP$n))[1],
+                               HPDinterval(mcmc(SMtoFP$n))[1],
+                               HPDinterval(mcmc(FPtoSD$n))[1],
+                               HPDinterval(mcmc(FPtoSM$n))[1]),
+                       upr = c(HPDinterval(mcmc(SDtoFP$n))[2],
+                               HPDinterval(mcmc(SMtoFP$n))[2],
+                               HPDinterval(mcmc(FPtoSD$n))[2],
+                               HPDinterval(mcmc(FPtoSM$n))[2]))
+
+FP_table %>% 
+  kbl() %>%
+  kable_material(c("striped", "hover"), full_width = F)
+```
+
+### Diversification dynamics
+
+We start by plotting diversification rates.
+
+#### Speciation
+
+```{r plot-speciation, eval=TRUE, warning=FALSE}
+# reshape to long
+rdat <- rbind(Hmod1[401:4400,c(1,c(28:33,5:10))],Hmod2[401:4400,c(1,c(28:33,5:10))])
+
+colnames(rdat) <-
+  c(
+    "Iteration",
+    "speciation_SM_0",
+    "speciation_FP_0",
+    "speciation_SD_0",
+    "speciation_SM_1",
+    "speciation_FP_1",
+    "speciation_SD_1",
+    "extinction_SM_0",
+    "extinction_FP_0",
+    "extinction_SD_0",
+    "extinction_SM_1",
+    "extinction_FP_1",
+    "extinction_SD_1"
+  )
+
+rdat_long <- pivot_longer(rdat, cols = c(2:13), names_to = "Event", values_to = "Rate") %>% separate_wider_delim(Event, delim = "_", names=c("Type", "State", "Hidden"))
+ 
+pal <- wes_palette("Zissou1", 12, type = "continuous")
+
+d1 <- ggplot(data = rdat_long[rdat_long$Type == "speciation",], aes(x = Rate, fill = State, alpha = Hidden)) +
+  geom_histogram(bins = 80, colour = "white", position = "identity", size = 0.2) + 
+  scale_fill_manual(values = pal[c(12,7,1)], name = "Colour state") +
+  scale_alpha_manual(values = c(0.5,1), name = "Hidden state") +
+  labs(y = "Posterior frequency", title = "(A)") +
+  theme_bw(base_size = 8) +
+  theme(panel.grid = element_blank()) +
+  xlim(0,0.8) #+
+  #facet_grid(cols = vars(Hidden), scales = "free")
+
+d1
+```
+
+```{r speciation-tests, eval=TRUE, message=FALSE}
+spe_wide <- rdat %>%
+  mutate(diff_0vs1_0 = speciation_SM_0 - speciation_FP_0) %>% 
+  mutate(diff_0vs2_0 = speciation_SM_0 - speciation_SD_0) %>% 
+  mutate(diff_2vs1_0 = speciation_SD_0 - speciation_FP_0) %>%
+  mutate(diff_0vs1_1 = speciation_SM_1 - speciation_FP_1) %>%
+  mutate(diff_0vs2_1 = speciation_SM_1 - speciation_SD_1) %>% 
+  mutate(diff_2vs1_1 = speciation_SD_1 - speciation_FP_1) %>%
+  dplyr::select(Iteration, starts_with("diff"))
+
+n <- nrow(spe_wide)
+
+spe_long <- pivot_longer(spe_wide, cols = c(2:7), names_to = "contrast", values_to = "diff") %>% 
+  separate_wider_delim(cols = contrast, delim = "_", names = c("prefix", "states", "hidden") ) %>%
+  dplyr::select(!prefix)
+
+spe_test <- spe_long %>%
+  group_by(states, hidden) %>%
+  summarise(Mean = mean(diff),
+            Lwr = HPDinterval(mcmc(diff))[1],
+            Upr = HPDinterval(mcmc(diff))[2],
+            PMCMC = sum(diff > 0)/n)
+
+spe_test %>% 
+  kbl() %>%
+  kable_material(c("striped", "hover"), full_width = F)
+```
+
+#### Extinction
+
+```{r plot-extinction, eval=TRUE, warning=FALSE}
+d2 <- ggplot(data = rdat_long[rdat_long$Type == "extinction",], aes(x = Rate, fill = State, alpha = Hidden)) +
+  geom_histogram(bins = 80, colour = "white", position = "identity", size = 0.2) + 
+  scale_fill_manual(values = pal[c(12,7,1)], name = "Colour state") +
+  scale_alpha_manual(values = c(0.5,1), name = "Hidden state") +
+  labs(y = "Posterior frequency", title = "(B)") +
+  theme_bw(base_size = 8) +
+  theme(panel.grid = element_blank()) +
+  xlim(0,0.2) +
+  ylim(0,500)
+  #facet_grid(cols = vars(Hidden), scales = "free")
+
+d2
+```
+
+```{r extinction-tests, eval=TRUE, message=FALSE}
+ext_wide <- rdat %>%
+  mutate(diff_0vs1_0 = extinction_SM_0 - extinction_FP_0) %>% 
+  mutate(diff_0vs2_0 = extinction_SM_0 - extinction_SD_0) %>% 
+  mutate(diff_2vs1_0 = extinction_SD_0 - extinction_FP_0) %>%
+  mutate(diff_0vs1_1 = extinction_SM_1 - extinction_FP_1) %>%
+  mutate(diff_0vs2_1 = extinction_SM_1 - extinction_SD_1) %>% 
+  mutate(diff_2vs1_1 = extinction_SD_1 - extinction_FP_1) %>%
+  dplyr::select(Iteration, starts_with("diff"))
+
+n <- nrow(ext_wide)
+
+ext_long <- pivot_longer(ext_wide, cols = c(2:7), names_to = "contrast", values_to = "diff") %>% 
+  separate_wider_delim(cols = contrast, delim = "_", names = c("prefix", "states", "hidden") ) %>%
+  dplyr::select(!prefix)
+
+ext_test <- ext_long %>%
+  group_by(states, hidden) %>%
+  summarise(Mean = mean(diff),
+            Lwr = HPDinterval(mcmc(diff))[1],
+            Upr = HPDinterval(mcmc(diff))[2],
+            PMCMC = sum(diff > 0)/n)
+
+ext_test %>% 
+  kbl() %>%
+  kable_material(c("striped", "hover"), full_width = F)
+```
+
+#### Net diversification
+
+```{r plot-diversification, eval=TRUE}
+div_dat <- rdat %>%
+  mutate(diversification_SM_0 = get("speciation_SM_0") - get("extinction_SM_0")) %>%
+  mutate(diversification_FP_0 = get("speciation_FP_0") - get("extinction_FP_0")) %>%
+  mutate(diversification_SD_0 = get("speciation_SD_0") - get("extinction_SD_0")) %>% 
+  mutate(diversification_SM_1 = get("speciation_SM_1") - get("extinction_SM_1")) %>%
+  mutate(diversification_FP_1 = get("speciation_FP_1") - get("extinction_FP_1")) %>%
+  mutate(diversification_SD_1 = get("speciation_SD_1") - get("extinction_SD_1")) %>%
+  dplyr::select(c(1,14:19))
+
+div_dat_long <- pivot_longer(div_dat, cols = c(2:7), names_to = "Event", values_to = "Rate") %>% separate_wider_delim(Event, delim = "_", names=c("Type", "State", "Hidden"))
+
+d3 <- ggplot(data = div_dat_long, aes(x = Rate, fill = State, alpha = Hidden)) +
+  geom_histogram(bins = 80, colour = "white", position = "identity", size = 0.2) + 
+  scale_fill_manual(values = pal[c(12,7,1)], name = "Colour state") +
+  scale_alpha_manual(values = c(0.5,1), name = "Hidden state") +
+  labs(y = "Posterior frequency", title = "(C)") +
+  theme_bw(base_size = 8) +
+  theme(panel.grid = element_blank()) +
+  xlim(0,0.6) #+
+  #facet_grid(cols = vars(Hidden), scales = "free")
+
+d3
+```
+
+```{r diversification-tests, eval=TRUE, warning=FALSE, message=FALSE}
+div_wide <- div_dat %>%
+  mutate(diff_0vs1_0 = diversification_SM_0 - diversification_FP_0) %>% 
+  mutate(diff_0vs2_0 = diversification_SM_0 - diversification_SD_0) %>% 
+  mutate(diff_2vs1_0 = diversification_SD_0 - diversification_FP_0) %>%
+  mutate(diff_0vs1_1 = diversification_SM_1 - diversification_FP_1) %>%
+  mutate(diff_0vs2_1 = diversification_SM_1 - diversification_SD_1) %>% 
+  mutate(diff_2vs1_1 = diversification_SD_1 - diversification_FP_1) %>%
+  dplyr::select(Iteration, starts_with("diff"))
+
+n <- nrow(div_wide)
+
+div_long <- pivot_longer(div_wide, cols = c(2:7), names_to = "contrast", values_to = "diff") %>% 
+  separate_wider_delim(cols = contrast, delim = "_", names = c("prefix", "states", "hidden") ) %>%
+  dplyr::select(!prefix)
+
+div_test <- div_long %>%
+  group_by(states, hidden) %>%
+  summarise(Mean = mean(diff),
+            Lwr = HPDinterval(mcmc(diff))[1],
+            Upr = HPDinterval(mcmc(diff))[2],
+            PMCMC = sum(diff > 0)/n)
+
+div_test %>% 
+  kbl() %>%
+  kable_material(c("striped", "hover"), full_width = F)
+```
+
+#### Turnover
+
+```{r plot-turnover, eval=TRUE, warning=FALSE, message=FALSE}
+turn_dat <- rdat %>%
+  mutate(turnover_SM_0 =  get("extinction_SM_0") / get("speciation_SM_0")) %>%
+  mutate(turnover_FP_0 = get("extinction_FP_0") / get("speciation_FP_0")) %>%
+  mutate(turnover_SD_0 = get("extinction_SD_0") / get("speciation_SD_0")) %>% 
+  mutate(turnover_SM_1 = get("extinction_SM_1") / get("speciation_SM_1")) %>%
+  mutate(turnover_FP_1 = get("extinction_FP_1") / get("speciation_FP_1")) %>%
+  mutate(turnover_SD_1 =  get("extinction_SD_1") / get("speciation_SD_1")) %>%
+  dplyr::select(c(1,14:19))
+
+turn_dat_long <- pivot_longer(turn_dat, cols = c(2:7), names_to = "Event", values_to = "Rate") %>% separate_wider_delim(Event, delim = "_", names=c("Type", "State", "Hidden"))
+
+d4 <- ggplot(data = turn_dat_long, aes(x = Rate, fill = State, alpha = Hidden)) +
+  geom_histogram(bins = 80, colour = "white", position = "identity", size = 0.2) + 
+  scale_fill_manual(values = pal[c(12,7,1)], name = "Colour state") +
+  scale_alpha_manual(values = c(0.5,1), name = "Hidden state") +
+  labs(y = "Posterior frequency", title = "(D)") +
+  theme_bw(base_size = 8) +
+  theme(panel.grid = element_blank()) +
+  xlim(0,0.8) +
+  ylim(0,500)
+  #facet_grid(cols = vars(Hidden), scales = "free")
+
+d4
+```
+
+```{r turnover-tests, eval=TRUE}
+tur_wide <- turn_dat %>%
+  mutate(diff_0vs1_0 = turnover_SM_0 - turnover_FP_0) %>% 
+  mutate(diff_0vs2_0 = turnover_SM_0 - turnover_SD_0) %>% 
+  mutate(diff_2vs1_0 = turnover_SD_0 - turnover_FP_0) %>%
+  mutate(diff_0vs1_1 = turnover_SM_1 - turnover_FP_1) %>%
+  mutate(diff_0vs2_1 = turnover_SM_1 - turnover_SD_1) %>% 
+  mutate(diff_2vs1_1 = turnover_SD_1 - turnover_FP_1) %>%
+  dplyr::select(Iteration, starts_with("diff"))
+
+n <- nrow(tur_wide)
+
+tur_long <- pivot_longer(tur_wide, cols = c(2:7), names_to = "contrast", values_to = "diff") %>% 
+  separate_wider_delim(cols = contrast, delim = "_", names = c("prefix", "states", "hidden") ) %>%
+  dplyr::select(!prefix)
+
+tur_test <- tur_long %>%
+  group_by(states, hidden) %>%
+  summarise(Mean = mean(diff),
+            Lwr = HPDinterval(mcmc(diff))[1],
+            Upr = HPDinterval(mcmc(diff))[2],
+            PMCMC = sum(diff > 0)/n)
+
+tur_test  %>% 
+  kbl() %>%
+  kable_material(c("striped", "hover"), full_width = F)
+```
+
+Finally combine results for all diversification rates for a table in the Supporting Material.
+
+```{r TableS3, eval=FALSE, echo=TRUE}
+rate_type <- rep(c("speciation", "extinction", "net diversification", "turnover"), each = 6)
+
+div_all <- bind_rows(list(spe_test,ext_test,div_test,tur_test)) %>% bind_cols(rate_type) %>%
+  rename(Rate_type = ...7) %>% rename(Comparison = states) %>% rename(Hidden = hidden) 
+
+div_all  %>% 
+  kbl() %>%
+  kable_material(c("striped", "hover"), full_width = F)
+
+#write.table(div_all, "../output/HiSSE/div_contrasts.tsv", quote = F, row.names = F, sep = "\t")
+```
+
+And combine figures
+
+```{r Fig4, eval=FALSE, warning=FALSE}
+div_rates <- grid.arrange(d1,d2,d3,d4, nrow=2)
+
+#ggsave(div_rates, filename = "../../Writing/Figures/Div_rates_V2.pdf", device = "pdf", width = 180, height = 120, units = "mm", dpi = 600)
+```
+
+# Ecological and demographic predictors of FPs
+We used six models to investigate the relationships between ecological factors, demographic factors and the phylogenetic distribution of FP. These analyses can be structured into 4 questions. For each question, we used a multinomial mixed effects model fitted using the package MCMCglmm [@Hadfield2010].
+
+## Are FPs more common in temperate regions and open areas?
+See introduction in Willink *et al.* (2024) for the rationale of this hypothesis. *Model 1* uses the literature data to address this question. 
+The  model chunk was run on UPPMAX.
+
+### Read and prepare the data
+
+```{r ecology-1 data, message=FALSE, eval=TRUE, echo=TRUE}
+# read in tree
+tre <- read.nexus(file = "../data/processed/HiSSE/Willink_MAP_coen.tree")
+
+# read biome data from Willink et al
+biodat <- read.csv("../data/processed/glmm/biome_dat.csv", sep = ",", header = T)[,-c(2:5)]
+
+# make latitudinal range variable
+biodat$Lat <- factor(paste0(biodat$Biome_1, biodat$Biome_2, biodat$Biome_3))
+
+# revalue levels both warm and cold go to temperate and tropical stays as tropical
+biodat$Lat <- dplyr::recode(biodat$Lat, "T" = "Trp", C = "Tmp", "W" = "Tmp", "WC" = "Tmp" )
+biodat$Lat[biodat$Lat == "TW" | biodat$Lat == "TWC" | biodat$Lat == ""] <- NA
+biodat <- biodat[,c("Taxon", "Lat")]
+
+# number of ambiguous taxa
+sum(is.na(biodat$Lat))
+
+biodat$Lat <- droplevels(biodat$Lat)
+#levels(as.factor(biodat$Lat))
+
+# read in opennes data
+opendat<-read.csv("../data/processed/glmm/Eco_lit_dat.csv", sep = ",", header = T, na.strings = c("", "NA"), colClasses = rep("factor", 4))[,-c(2,4)]
+
+# number of ambiguous taxa
+sum(is.na(opendat$Hab))
+
+# join data frames
+ecodat <- left_join(biodat,opendat) %>%  left_join(femdat)
+
+# filter missing data
+ecodat <- ecodat[!is.na(ecodat$State),]
+
+# taxa to row names
+rownames(ecodat)<-ecodat$Taxon
+```
+
+### General data description
+
+```{r ecolog1-summ-data, eval=TRUE}
+# how many taxa with latitudinal data
+nrow(ecodat) - sum(is.na(ecodat$Lat))
+
+## how many taxa with ambiguous latitudinal distribution
+sum(is.na(ecodat$Lat))
+
+## how many taxa without habitat openness
+nrow(ecodat) - sum(is.na(ecodat$Hab))
+
+## how many taxa with ambiguous habitat openness
+length(ecodat$Hab[ecodat$Hab == "C/O"]) - sum(is.na(ecodat$Hab))
+
+## data prep
+# make ambiguous habitats NA
+ecodat$Hab[ecodat$Hab == "C/O"] <- NA
+ecodat$Hab <- droplevels(ecodat$Hab)
+
+# drop species missing either ecological variable 
+ecodat <- ecodat[complete.cases(ecodat[,2:3]) == T,]
+
+#write.table(ecodat, "../data/processed/glmm/Eco_lit_dat.tsv", quote = F, row.names = F, sep = "\t")
+
+# number of taxa left
+nrow(ecodat)
+
+# check taxon labels match
+matching <- name.check(tre, ecodat, ecodat$Taxon)
+
+# prune tre to match data
+ecotre <- drop.tip(tre, matching$tree_not_data, rooted = TRUE)
+
+# fix rounding errors to make ultrametric
+ecotre <- nnls.tree(cophenetic(ecotre), ecotre, rooted = TRUE, method = "ultrametric")
+```
+
+### Model 1
+I ran this model on UPPMAX
+
+```{bash glmm_m1, eval = FALSE, echo=TRUE}
+module load R_packages/4.1.1
+
+date
+
+# Run Rscript in a clean R instance, output a logfile
+Rscript --vanilla --verbose ./glmm/glmm_mm1.R > slurm-${SLURM_JOBID}.Rout 2>&1 
+
+# append logfile to this scripts logfile
+cat slurm-${SLURM_JOBID}.Rout >> slurm-${SLURM_JOBID}.out
+
+# remove Rout log
+rm slurm-${SLURM_JOBID}.Rout
+
+date
+```
+
+#### Run the model
+
+```{r ecology-1 run, eval=FALSE, echo=TRUE}
+# we need a matrix of phylogenetic distances to account for shared evolutionary history
+inv.phylo <- inverseA(ecotre, nodes = "TIPS", scale = TRUE)
+
+# residual covariance matrix 1/J*(I+J), I and J are identity and unit matrices respectively
+IJ <- (1/3) * (diag(2) + matrix(1, 2, 2))
+
+# kronecker prior for fixed effect close to being flat for the 2 way:
+#(0 vs.1 , 1 vs. 2 and 0 vs. 2) marginal probabilities within each fixed effect
+pr1 <- list(
+  B = list(mu = rep(0, 8), V = diag(8) * (1.7 + pi ^ 2 / 3)),
+  R = list(V = IJ, fix = 1),
+  G = list(G1 = list(
+    V = IJ,
+    nu = 1000,
+    alpha.mu = rep(0, 2),
+    alpha.V = diag(2)
+  ))
+)
+
+# run the model without intercept to estimate the probability of each state in each combination of latitude and habitat
+mm1 <-
+  MCMCglmm(
+    State ~ at.level(Hab, 'O'):at.level(Lat, 'Trp'):trait +
+      at.level(Hab, 'O'):at.level(Lat, 'Tmp'):trait +
+      at.level(Hab, 'C'):at.level(Lat, 'Trp'):trait +
+      at.level(Hab, 'C'):at.level(Lat, 'Tmp'):trait - 1,
+    random = ~ us(trait):Taxon,
+    rcov = ~ us(trait):units,
+    ginverse = list(Taxon = inv.phylo$Ainv),
+    family = "categorical",
+    data = ecodat,
+    prior = pr1,
+    pl = TRUE,
+    slice = TRUE,
+    nitt = 330000,
+    burnin = 3000,
+    thin = 100,
+    verbose = f
+  )
+
+#write.table(mm1$VCV, file = "../output/glmm/mm1_VCV.tsv", quote = F, row.names = F, sep = "\t")
+#write.table(mm1$Sol, file = "../output/glmm/mm1_Sol.tsv", quote = F, row.names = F, sep = "\t")
+#write.table(mm1$Liab, file = "../output/glmm/mm1_Liab.tsv", quote = F, row.names = F, sep = "\t")
+```
+
+#### Get all intercepts
+```{r ecology-1 intercepts, eval=TRUE}
+mm1_Sol <- read.table(file = "../output/glmm/mm1_Sol.tsv", header = T, sep = "\t")
+
+# rescale the intercepts as if the residual covariance matrix was zero
+Delta <- cbind(c(-1, 1, 0), c(-1, 0, 1))
+c2 <- (16 * sqrt(3)/(15 * pi))^2
+D <- ginv(Delta %*% t(Delta)) %*% Delta
+
+# reminder of the residual covariance structure
+IJ <- (1/3) * (diag(2) + matrix(1, 2, 2))
+
+# Tropical open habitat
+Int1 <- t(apply(mm1_Sol[, 1:2], 1, function(x) {
+  D %*% (x/sqrt(1 + c2 * diag(IJ))
+  )
+}))
+
+Trp_O <- (mcmc(exp(Int1)/rowSums(exp(Int1)))) 
+
+# Temperate open landscape
+Int2 <- t(apply(cbind(mm1_Sol[, 3:4]), 1, function(x) {
+  D %*% (x/sqrt(1 + c2 * diag(IJ))
+  )
+}))
+
+Tmp_O <- (mcmc(exp(Int2)/rowSums(exp(Int2)))) 
+
+# Tropical closed habitat
+Int3 <- t(apply(cbind(mm1_Sol[, 5:6]), 1, function(x) {
+  D %*% (x/sqrt(1 + c2 * diag(IJ))
+  )
+}))
+
+Trp_C <- (mcmc(exp(Int3)/rowSums(exp(Int3))))
+
+# Temperate closed habitat
+Int4 <- t(apply(cbind(mm1_Sol[, 7:8]), 1, function(x) {
+  D %*% (x/sqrt(1 + c2 * diag(IJ))
+  )
+}))
+
+Tmp_C <- (mcmc(exp(Int4)/rowSums(exp(Int4))))
+```
+
+#### Summary table
+
+Summarise estimates in a table
+
+```{r ecology-1 summ, eval=TRUE}
+Eco_FP_lit <- data.frame(Latitude =rep( c("tropical", "temperate"), each = 2), 
+                         Habitat = rep( c("open", "closed"), 2), 
+                         SM_mean = c(mean(Trp_O[,1]), mean(Trp_C[,1]), mean(Tmp_O[,1]), mean(Tmp_C[,1])),
+                         FP_mean = c(mean(Trp_O[,2]), mean(Trp_C[,2]), mean(Tmp_O[,2]), mean(Tmp_C[,2])),
+                         SD_mean = c(mean(Trp_O[,3]), mean(Trp_C[,3]), mean(Tmp_O[,3]), mean(Tmp_C[,3])))
+                         
+
+Eco_FP_lit %>% kbl(booktabs =T, align= c(rep('l',2),rep('r', 3))) %>%
+kable_styling(latex_options ="striped")
+
+#write.table(Eco_FP_lit, file = "../output/glmm/mm1_estimates.tsv", sep = "\t", row.names = F, quote = F)
+```
+
+#### Plot
+We plot the results separately for each state. First prepare the data for plotting.
+
+```{r ecology-1 plot_prepare, eval=TRUE}
+pal <- wes_palette("Zissou1", 12, type = "continuous")
+
+n = nrow(mm1_Sol)
+
+# female polymorphism
+Plotdat<-data.frame(Lat = rep(c("Tropical", "Temperate", "Tropical", "Temperate"), each = n ),
+                   Hab = rep(c("O", "C"), each = 2*n),
+                   SM_p = c(Trp_O[,1], Tmp_O[,1], Trp_C[,1], Tmp_C[,1]),
+                   FP_p = c(Trp_O[,2], Tmp_O[,2], Trp_C[,2], Tmp_C[,2]),
+                   SD_p = c(Trp_O[,3], Tmp_O[,3], Trp_C[,3], Tmp_C[,3]))
+
+Plotdat$Sample<-rownames(Plotdat)
+Plotdat$Eco<-paste(Plotdat$Lat, Plotdat$Hab, sep="_")
+#head(Plotdat)
+```
+
+Ecological effects on the occurrence of sexual monomorphism (SM)
+
+```{r ecology-1 plot_SM, eval=TRUE}
+p1.0 <-
+   ggplot(Plotdat, aes(x = SM_p, color = Eco, fill = Eco)) + theme_bw(base_size = 8) +
+  labs(title = "(A)",
+       x = "Probability of sexual monomorphism", y = "Posterior frequency") +
+  geom_histogram(
+    binwidth = 0.02,
+    linewidth = 0.25,
+    alpha = 0.5,
+    colour = "grey20",
+    position = "identity",
+    aes(y = after_stat(count))
+  ) +
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE), color = NULL) +
+  #xlim(0, 1.0) +
+  scale_fill_manual(
+    breaks = c("Tropical_C", "Tropical_O", "Temperate_C", "Temperate_O"),
+    values = pal[c(12, 8, 5, 1)],
+    labels = c(
+      "tropical-closed",
+      "tropical-open",
+      "temperate-closed",
+      "temperate-open"
+    ),
+    name = "Latitude-habitat"
+  ) +
+    theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+p1.0
+```
+
+Ecological effects on the occurrence of female polymorphism (FP)
+
+```{r ecology-1 plot_FP, eval=TRUE}
+p1.1 <-
+  ggplot(Plotdat, aes(x = FP_p, color = Eco, fill = Eco)) + theme_bw(base_size = 8) +
+  labs(title = "",
+       x = "Probability of female polymorphism", y = "Posterior frequency") +
+  geom_histogram(
+    binwidth = 0.02,
+    linewidth = 0.25,
+    alpha = 0.5,
+    colour = "grey20",
+    position = "identity",
+    aes(y = after_stat(count))
+  ) +
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE), color = NULL) +
+  #xlim(0, 1.0) +
+  scale_fill_manual(
+    breaks = c("Tropical_C", "Tropical_O", "Temperate_C", "Temperate_O"),
+    values = pal[c(12, 8, 5, 1)],
+    labels = c(
+      "tropical-closed",
+      "tropical-open",
+      "temperate-closed",
+      "temperate-open"
+    ),
+    name = "Latitude-habitat"
+  ) +
+    theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+p1.1
+
+#ggsave(p1.1, 
+#       filename = "~/Dropbox/Doctorado/COEN_Comparative/Writing/Figures/Model1_FP.pdf", device = "pdf", units = "mm", width = 80, height = 40)
+```
+
+Ecological effects on the occurrence of sexual dimorphism (SD)
+
+```{r ecology-1 plot_SD, eval=TRUE}
+p1.2 <-
+  ggplot(Plotdat, aes(x = SD_p, color = Eco, fill = Eco)) + theme_bw(base_size = 8) +
+  labs(title = "(B)",
+       x = "Probability of sexual dimorphism", y = "Posterior frequency") +
+  geom_histogram(
+    binwidth = 0.02,
+    linewidth = 0.25,
+    alpha = 0.5,
+    colour = "grey20",
+    position = "identity",
+    aes(y = after_stat(count))
+  ) +
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE), color = NULL) +
+  #xlim(0, 1.0) +
+  scale_fill_manual(
+    breaks = c("Tropical_C", "Tropical_O", "Temperate_C", "Temperate_O"),
+    values = pal[c(12, 8, 5, 1)],
+    labels = c(
+      "tropical-closed",
+      "tropical-open",
+      "temperate-closed",
+      "temperate-open"
+    ),
+    name = "Latitude-habitat"
+  ) +
+    theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+p1.2
+```
+
+Export SM and SD for Supporting Material
+
+```{r figS1-export, eval=FALSE}
+
+FigS1 <- grid.arrange(p1.0,p1.2, ncol = 2)
+
+ggsave(FigS1, 
+       filename = "~/Dropbox/Doctorado/COEN_Comparative/Writing/Figures/Model1_SM_SD.pdf", device = "pdf", units = "mm", width = 200, height = 80)
+
+```
+
+#### Hypothesis test
+FPs are more frequent in temperate regions, and in open areas of tropical regions. Sexual monomorphism is more common in closed, tropical habitats.
+
+```{r ecology1-hypotheses-FP, eval=TRUE}
+# length of posterior sample
+n = length(Tmp_C[,2])
+
+# Temperate vs tropical in open
+LatO_m <- mean(Tmp_O[,2] - Trp_O[,2])
+LatO_l <- HPDinterval(Tmp_O[,2] - Trp_O[,2])[1]
+LatO_u <- HPDinterval(Tmp_O[,2] - Trp_O[,2])[2]
+LatO_p <- sum(Trp_O[,2] - Tmp_O[,2] > 0) / n
+
+# Temperate vs tropical in closed
+LatC_m <- mean(Tmp_C[,2] - Trp_C[,2])
+LatC_l <- HPDinterval(Tmp_C[,2] - Trp_C[,2])[1]
+LatC_u <- HPDinterval(Tmp_C[,2] - Trp_C[,2])[2]
+LatC_p <- sum(Trp_C[,2] - Tmp_C[,2] > 0) / n
+
+# Open vs closed in tropics
+HabTr_m <- mean(Trp_O[,2] - Trp_C[,2])
+HabTr_l <- HPDinterval(Trp_O[,2] - Trp_C[,2])[1]
+HabTr_u <- HPDinterval(Trp_O[,2] - Trp_C[,2])[2]
+HabTr_p <- sum(Trp_C[,2] - Trp_O[,2] > 0) / n
+
+# Open vs closed in tropics
+HabTm_m <- mean(Tmp_O[,2] - Tmp_C[,2])
+HabTm_l <- HPDinterval(Tmp_O[,2] - Tmp_C[,2])[1]
+HabTm_u <- HPDinterval(Tmp_O[,2] - Tmp_C[,2])[2]
+HabTm_p <- 1 - (sum(Tmp_O[,2] - Tmp_C[,2] > 0) / n)
+
+# combine in dataframe
+FP_tests <- data.frame(Comparsion = c("temperate-open vs tropical-open",
+                                      "temperate-closed vs tropical-closed",
+                                      "tropical-open vs tropical-closed",
+                                      "temperate-open vs temperate-closed"),
+                       Mean = c(LatO_m, LatC_m, HabTr_m, HabTm_m),
+                       Lower =  c(LatO_l, LatC_l, HabTr_l, HabTm_l),
+                       Upper =  c(LatO_u, LatC_u, HabTr_u, HabTm_u),
+                       PMCMC =  c(LatO_p, LatC_p, HabTr_p, HabTm_p))
+
+FP_tests  %>%
+  kbl(booktabs =T, align= c(rep('l',1),rep('r', 4))) %>%
+  kable_styling(latex_options ="striped")
+```
+
+```{r ecology1-hypotheses-SM, eval=TRUE}
+# length of posterior sample
+n = length(Tmp_C[,1])
+
+# Temperate vs tropical in open
+LatO_m <- mean(Tmp_O[,1] - Trp_O[,1])
+LatO_l <- HPDinterval(Tmp_O[,1] - Trp_O[,1])[1]
+LatO_u <- HPDinterval(Tmp_O[,1] - Trp_O[,1])[2]
+LatO_p <- 1 - (sum(Trp_O[,1] - Tmp_O[,1] > 0) / n)
+
+# Temperate vs tropical in closed
+LatC_m <- mean(Tmp_C[,1] - Trp_C[,1])
+LatC_l <- HPDinterval(Tmp_C[,1] - Trp_C[,1])[1]
+LatC_u <- HPDinterval(Tmp_C[,1] - Trp_C[,1])[2]
+LatC_p <- 1 - (sum(Trp_C[,1] - Tmp_C[,1] > 0) / n)
+
+# Open vs closed in tropics
+HabTr_m <- mean(Trp_O[,1] - Trp_C[,1])
+HabTr_l <- HPDinterval(Trp_O[,1] - Trp_C[,1])[1]
+HabTr_u <- HPDinterval(Trp_O[,1] - Trp_C[,1])[2]
+HabTr_p <- 1 - (sum(Trp_C[,1] - Trp_O[,1] > 0) / n)
+
+# Open vs closed in tropics
+HabTm_m <- mean(Tmp_O[,1] - Tmp_C[,1])
+HabTm_l <- HPDinterval(Tmp_O[,1] - Tmp_C[,1])[1]
+HabTm_u <- HPDinterval(Tmp_O[,1] - Tmp_C[,1])[2]
+HabTm_p <- sum(Tmp_O[,1] - Tmp_C[,1] > 0) / n
+
+# combine in dataframe
+SM_tests <- data.frame(Comparsion = c("temperate-open vs tropical-open",
+                                      "temperate-closed vs tropical-closed",
+                                      "tropical-open vs tropical-closed",
+                                      "temperate-open vs temperate-closed"),
+                       Mean = c(LatO_m, LatC_m, HabTr_m, HabTm_m),
+                       Lower =  c(LatO_l, LatC_l, HabTr_l, HabTm_l),
+                       Upper =  c(LatO_u, LatC_u, HabTr_u, HabTm_u),
+                       PMCMC =  c(LatO_p, LatC_p, HabTr_p, HabTm_p))
+
+SM_tests  %>%
+  kbl(booktabs =T, align= c(rep('l',1),rep('r', 4))) %>%
+  kable_styling(latex_options ="striped")
+```
+
+```{r ecology1-hypotheses-SD, eval=TRUE}
+# length of posterior sample
+n = length(Tmp_C[,3])
+
+# Temperate vs tropical in open
+LatO_m <- mean(Tmp_O[,3] - Trp_O[,3])
+LatO_l <- HPDinterval(Tmp_O[,3] - Trp_O[,3])[1]
+LatO_u <- HPDinterval(Tmp_O[,3] - Trp_O[,3])[2]
+LatO_p <- 1 - (sum(Trp_O[,3] - Tmp_O[,3] > 0) / n)
+
+# Temperate vs tropical in closed
+LatC_m <- mean(Tmp_C[,3] - Trp_C[,3])
+LatC_l <- HPDinterval(Tmp_C[,3] - Trp_C[,3])[1]
+LatC_u <- HPDinterval(Tmp_C[,3] - Trp_C[,3])[2]
+LatC_p <- 1 - (sum(Trp_C[,3] - Tmp_C[,3] > 0) / n)
+
+# Open vs closed in tropics
+HabTr_m <- mean(Trp_O[,3] - Trp_C[,3])
+HabTr_l <- HPDinterval(Trp_O[,3] - Trp_C[,3])[1]
+HabTr_u <- HPDinterval(Trp_O[,3] - Trp_C[,3])[2]
+HabTr_p <- sum(Trp_C[,3] - Trp_O[,3] > 0) / n
+
+# Open vs closed in tropics
+HabTm_m <- mean(Tmp_O[,3] - Tmp_C[,3])
+HabTm_l <- HPDinterval(Tmp_O[,3] - Tmp_C[,3])[1]
+HabTm_u <- HPDinterval(Tmp_O[,3] - Tmp_C[,3])[2]
+HabTm_p <- 1 - (sum(Tmp_O[,3] - Tmp_C[,3] > 0) / n)
+
+# combine in dataframe
+SD_tests <- data.frame(Comparsion = c("temperate-open vs tropical-open",
+                                      "temperate-closed vs tropical-closed",
+                                      "tropical-open vs tropical-closed",
+                                      "temperate-open vs temperate-closed"),
+                       Mean = c(LatO_m, LatC_m, HabTr_m, HabTm_m),
+                       Lower =  c(LatO_l, LatC_l, HabTr_l, HabTm_l),
+                       Upper =  c(LatO_u, LatC_u, HabTr_u, HabTm_u),
+                       PMCMC =  c(LatO_p, LatC_p, HabTr_p, HabTm_p))
+
+SD_tests  %>%
+  kbl(booktabs =T, align= c(rep('l',1),rep('r', 4))) %>%
+  kable_styling(latex_options ="striped")
+```
+
+Combine tables for Supporting Material
+
+```{r echo=TRUE, eval=FALSE}
+Htests <- bind_rows(list(SM_tests,FP_tests, SD_tests), .id = "State") %>% 
+  mutate(State=factor(State, labels=c('SM', "FP", 'SD')))
+
+write.table(Htests, file = "../output/glmm/mm1_Htests.tsv", sep = "\t", row.names = F, quote = F)
+```
+
+### Repeat with field data only (Model 2)
+
+In *Model 2*, we make sure this general pattern holds for the subset of data collected in the field.
+
+#### Read and prepare the data
+
+```{r ecology-2 data, eval=TRUE}
+# Read in lit data
+dat<-read.csv("../data/processed/glmm/Field_comp_dat.csv", sep = ",", header = T, na.strings = c("", "NA"), colClasses = c(rep("factor", 8), rep("numeric",3)))
+
+# drop species missing either ecological variable 
+dat <- dat[complete.cases(dat[,6:8]) == T,] 
+
+# number of taxa left
+nrow(dat)
+
+# prune data not in tree (featherlegs)
+matching <- name.check(tre, dat, dat$Taxon)
+
+ecodat2 <- dat[!(dat$Taxon %in% matching$data_not_tree),]
+
+# prune trees to match data
+ecotre2<-drop.tip(tre, matching$tree_not_data, rooted = TRUE)
+
+# fix rounding errors to make ultrametric
+ecotre2 <- nnls.tree(cophenetic(ecotre2), ecotre2, rooted = TRUE, method = "ultrametric")
+```
+
+#### Run the model
+
+```{r ecology-2 run, eval=TRUE}
+# we need a matrix of phylogenetic distances to account for shared evolutionary history
+inv.phylo <- inverseA(ecotre2, nodes = "TIPS", scale = TRUE)
+
+# residual covariance matrix 1/J*(I+J), I and J are identity and unit matrices respectively
+IJ <- (1/3) * (diag(2) + matrix(1, 2, 2))
+
+# kronecker prior for fixed effect close to being flat for the 2 way:
+#(0 vs.1 , 1 vs. 2 and 0 vs. 2) marginal probabilities within each fixed effect
+pr1 <- list(
+  B = list(mu = rep(0, 8), V = diag(8) * (1.7 + pi ^ 2 / 3)),
+  R = list(V = IJ, fix = 1),
+  G = list(
+    G1 = list(
+      V = IJ,
+      nu = 1000,
+      alpha.mu = rep(0, 2),
+      alpha.V = diag(2)
+    ),
+    G2 = list(
+      V = 1,
+      nu = 1000,
+      alpha.mu = rep(0, 1),
+      alpha.V = diag(1)
+    )
+  )
+)
+
+# run the model without intercept to estimate the probability of each state in each combination of latitude and habitat
+# with SM as baseline for log-odds
+mm2.1 <-
+  MCMCglmm(
+    relevel(FemState, ref="0") ~ at.level(Hab, 'O'):at.level(Lat, 'Trp'):trait +
+      at.level(Hab, 'O'):at.level(Lat, 'Tmp'):trait +
+      at.level(Hab, 'C'):at.level(Lat, 'Trp'):trait +
+      at.level(Hab, 'C'):at.level(Lat, 'Tmp'):trait - 1,
+    random = ~ us(trait):Taxon + Site,
+    rcov = ~ us(trait):units,
+    ginverse = list(Taxon = inv.phylo$Ainv),
+    family = "categorical",
+    data = ecodat2,
+    prior = pr1,
+    pl = TRUE,
+    slice = TRUE,
+    nitt = 330000,
+    burnin = 30000,
+    thin = 100,
+    verbose = F
+  )
+
+# with SD as baseline for log-odds
+mm2.2 <-
+  MCMCglmm(
+    relevel(FemState, ref="2") ~ at.level(Hab, 'O'):at.level(Lat, 'Trp'):trait +
+      at.level(Hab, 'O'):at.level(Lat, 'Tmp'):trait +
+      at.level(Hab, 'C'):at.level(Lat, 'Trp'):trait +
+      at.level(Hab, 'C'):at.level(Lat, 'Tmp'):trait - 1,
+    random = ~ us(trait):Taxon + Site,
+    rcov = ~ us(trait):units,
+    ginverse = list(Taxon = inv.phylo$Ainv),
+    family = "categorical",
+    data = ecodat2,
+    prior = pr1,
+    pl = TRUE,
+    slice = TRUE,
+    nitt = 330000,
+    burnin = 30000,
+    thin = 100,
+    verbose = F
+  )
+```
+
+#### Get all intercepts
+
+```{r ecology-2 intercepts, eval=TRUE}
+# rescale the intercepts as if the residual covariance matrix was zero
+Delta <- cbind(c(-1, 1, 0), c(-1, 0, 1))
+c2 <- (16 * sqrt(3)/(15 * pi))^2
+D <- ginv(Delta %*% t(Delta)) %*% Delta
+
+# Tropical open habitat
+Int1 <- t(apply(mm2.1$Sol[, 1:2], 1, function(x) {
+  D %*% (x/sqrt(1 + c2 * diag(IJ))
+  )
+}))
+
+Trp_O<- (mcmc(exp(Int1)/rowSums(exp(Int1)))) 
+
+# Temperate open landscape
+Int2 <- t(apply(cbind(mm2.1$Sol[, 3:4]), 1, function(x) {
+  D %*% (x/sqrt(1 + c2 * diag(IJ))
+  )
+}))
+
+Tmp_O<-(mcmc(exp(Int2)/rowSums(exp(Int2)))) #
+
+# Tropical closed habitat
+Int3 <- t(apply(cbind(mm2.1$Sol[, 5:6]), 1, function(x) {
+  D %*% (x/sqrt(1 + c2 * diag(IJ))
+  )
+}))
+
+Trp_C<-(mcmc(exp(Int3)/rowSums(exp(Int3))))
+
+# Temperate closed habitat
+Int4 <- t(apply(cbind(mm2.1$Sol[, 7:8]), 1, function(x) {
+  D %*% (x/sqrt(1 + c2 * diag(IJ))
+  )
+}))
+
+Tmp_C<-(mcmc(exp(Int4)/rowSums(exp(Int4))))
+```
+
+
+#### Summary table
+
+```{r ecology-2 summ, eval=TRUE}
+Eco_FP_field <- data.frame(Latitude =rep( c("Tropical", "Temperate"), each = 2), 
+                         Habitat = rep( c("open", "closed"), 2), 
+                         SM_mean = c(mean(Trp_O[,1]), mean(Trp_C[,1]), mean(Tmp_O[,1]), mean(Tmp_C[,1])),
+                         SD_mean = c(mean(Trp_O[,3]), mean(Trp_C[,3]), mean(Tmp_O[,3]), mean(Tmp_C[,3])),
+                         FP_mean = c(mean(Trp_O[,2]), mean(Trp_C[,2]), mean(Tmp_O[,2]), mean(Tmp_C[,2])))
+
+Eco_FP_field %>% kbl(booktabs =T, align= c(rep('l',2),rep('r', 3))) %>%
+kable_styling(latex_options ="striped")
+
+Eco_FP <- rbind(Eco_FP_lit, Eco_FP_field)
+Eco_FP$Source <- rep (c("literature", "field"), each = 4)
+
+Eco_FP <- Eco_FP[,c(6,1:5)]
+
+Eco_FP %>% kbl(booktabs =T, align= c(rep('l',3),rep('r', 3))) %>%
+kable_styling(latex_options ="striped")
+```
+
+#### Plot
+We plot the results separately for each state. First prepare the data for plotting.
+
+```{r ecology-2 plot_prepare, eval=TRUE}
+pal <- wes_palette("Zissou1", 12, type = "continuous")
+
+n = nrow(mm2.1$Sol)
+
+#Female polymorphism
+Plotdat<-data.frame(Lat = rep(c("Tropical", "Temperate", "Tropical", "Temperate"), each = n ),
+                   Hab = rep(c("O", "C"), each = 2*n),
+                   SM_p = c(Trp_O[,1], Tmp_O[,1], Trp_C[,1], Tmp_C[,1]),
+                   FP_p = c(Trp_O[,2], Tmp_O[,2], Trp_C[,2], Tmp_C[,2]),
+                   SD_p = c(Trp_O[,3], Tmp_O[,3], Trp_C[,3], Tmp_C[,3]))
+
+Plotdat$Sample<-rownames(Plotdat)
+Plotdat$Eco<-paste(Plotdat$Lat, Plotdat$Hab, sep="_")
+```
+
+```{r ecology-2 plot_SM, eval=TRUE}
+p2.0 <-
+   ggplot(Plotdat, aes(x = SM_p, color = Eco, fill = Eco)) + theme_bw(base_size = 8) +
+  labs(title = "",
+       x = "Probability of sexual monomorphism", y = "Posterior frequency") +
+  geom_histogram(
+    binwidth = 0.02,
+    linewidth = 0.25,
+    alpha = 0.5,
+    colour = "grey20",
+    position = "identity",
+    aes(y = after_stat(count))
+  ) +
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE), color = NULL) +
+  #xlim(0, 1.0) +
+  scale_fill_manual(
+    breaks = c("Tropical_C", "Tropical_O", "Temperate_C", "Temperate_O"),
+    values = pal[c(12, 8, 5, 1)],
+    labels = c(
+      "Tropical-closed",
+      "Tropical-open",
+      "Temperate-closed",
+      "Temperate-open"
+    ),
+    name = "Distribution-habitat"
+  ) +
+    theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+p2.0
+```
+
+```{r ecology-2 plot_FP, eval=TRUE}
+p2.1 <-
+  ggplot(Plotdat, aes(x = FP_p, color = Eco, fill = Eco)) + theme_bw(base_size = 8) +
+  labs(title = "",
+       x = "Probability of female polymorphism", y = "Posterior frequency") +
+  geom_histogram(
+    binwidth = 0.02,
+    linewidth = 0.25,
+    alpha = 0.5,
+    colour = "grey20",
+    position = "identity",
+    aes(y = after_stat(count))
+  ) +
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE), color = NULL) +
+  #xlim(0, 1.0) +
+  scale_fill_manual(
+    breaks = c("Tropical_C", "Tropical_O", "Temperate_C", "Temperate_O"),
+    values = pal[c(12, 8, 5, 1)],
+    labels = c(
+      "Tropical-closed",
+      "Tropical-open",
+      "Temperate-closed",
+      "Temperate-open"
+    ),
+    name = "Latitude-habitat"
+  ) +
+    theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+p2.1
+
+#ggsave(p2.1, 
+#       filename = "~/Dropbox/Doctorado/COEN_Comparative/Writing/Figures/Model2_FP.pdf", device = "pdf", units = "mm", width = 80, height = 40)
+```
+
+```{r ecology-2 plot_SD}
+p2.2 <-
+  ggplot(Plotdat, aes(x = SD_p, color = Eco, fill = Eco)) + theme_bw(base_size = 8) +
+  labs(title = "",
+       x = "Probability of sexual dimorphism", y = "Posterior frequency") +
+  geom_histogram(
+    binwidth = 0.02,
+    linewidth = 0.25,
+    alpha = 0.5,
+    colour = "grey20",
+    position = "identity",
+    aes(y = after_stat(count))
+  ) +
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE), color = NULL) +
+  #xlim(0, 1.0) +
+  scale_fill_manual(
+    breaks = c("Tropical_C", "Tropical_O", "Temperate_C", "Temperate_O"),
+    values = pal[c(12, 8, 5, 1)],
+    labels = c(
+      "Tropical-closed",
+      "Tropical-open",
+      "Temperate-closed",
+      "Temperate-open"
+    ),
+    name = "Distribution-habitat"
+  ) +
+    theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+p2.2
+```
+
+#### Hypothesis test
+
+```{r ecology2-hypotheses-FP, eval=TRUE}
+# length of posterior sample
+n = length(Tmp_C[,2])
+
+# Temperate vs tropical in open
+LatO_m <- mean(Tmp_O[,2] - Trp_O[,2])
+LatO_l <- HPDinterval(Tmp_O[,2] - Trp_O[,2])[1]
+LatO_u <- HPDinterval(Tmp_O[,2] - Trp_O[,2])[2]
+LatO_p <- sum(Trp_O[,2] - Tmp_O[,2] > 0) / n
+
+# Temperate vs tropical in closed
+LatC_m <- mean(Tmp_C[,2] - Trp_C[,2])
+LatC_l <- HPDinterval(Tmp_C[,2] - Trp_C[,2])[1]
+LatC_u <- HPDinterval(Tmp_C[,2] - Trp_C[,2])[2]
+LatC_p <- sum(Trp_C[,2] - Tmp_C[,2] > 0) / n
+
+# Open vs closed in tropics
+HabTr_m <- mean(Trp_O[,2] - Trp_C[,2])
+HabTr_l <- HPDinterval(Trp_O[,2] - Trp_C[,2])[1]
+HabTr_u <- HPDinterval(Trp_O[,2] - Trp_C[,2])[2]
+HabTr_p <- sum(Trp_C[,2] - Trp_O[,2] > 0) / n
+
+# Open vs closed in tropics
+HabTm_m <- mean(Tmp_C[,1] - Tmp_O[,1])
+HabTm_l <- HPDinterval(Tmp_C[,1] - Tmp_O[,1])[1]
+HabTm_u <- HPDinterval(Tmp_C[,1] - Tmp_O[,1])[2]
+HabTm_p <- sum(Tmp_O[,1] - Tmp_C[,1] > 0) / n
+
+# combine in dataframe
+FP_tests <- data.frame(comparsion = c("Temperate-open vs Tropical-open",
+                                      "Temperate-closed vs Tropical-closed",
+                                      "Tropical-open vs Tropical-closed",
+                                      "Temperate-open vs Temperate-closed"),
+                       mean = c(LatO_m, LatC_m, HabTr_m, HabTm_m),
+                       lower =  c(LatO_l, LatC_l, HabTr_l, HabTm_l),
+                       upper =  c(LatO_u, LatC_u, HabTr_u, HabTm_u),
+                       pMCMC =  c(LatO_p, LatC_p, HabTr_p, HabTm_p))
+
+FP_tests  %>%
+  kbl(booktabs =T, align= c(rep('l',1),rep('r', 4))) %>%
+  kable_styling(latex_options ="striped")
+```
+
+
+## Are FLCPs more common in in species with high breeding density and male-biased OSR?
+See introduction in Willink *et al.* (2024) for the rationale of this hypothesis.
+
+### Summary of field sampling
+
+```{r field-sampling, eval=TRUE}
+# How many breeding sites per country?
+site_count <- aggregate(ecodat2$Site, by = list(ecodat2$Country), FUN = length)
+site_count  %>% 
+  kbl() %>%
+  kable_material(c("striped", "hover"), full_width = F)
+
+# Effort per site
+site_time <- aggregate(ecodat2$Time, by = list(ecodat2$Site), FUN = sum)
+
+effort <- data.frame(stat = c("min", "max", "mean", "sd"),
+                     value = c(min(site_time$x/60), 
+                               max(site_time$x/60),
+                               mean(site_time$x/60),
+                               sd(site_time$x/60)))
+effort %>%
+kbl(booktabs =T, align= c('l','r')) %>%
+kable_styling(latex_options ="striped")
+```
+
+### Prepare the density data
+
+```{r density data, eval=TRUE}
+# total number or individuals
+ecodat2$Total <- ecodat2$Female + ecodat2$Male 
+
+# zero - centered time so we can compare intercepts later on
+ecodat2$TimeC <- scale(log(ecodat2$Time), center = TRUE, scale = FALSE)
+
+# density
+ecodat2$dens <- ecodat2$Total / ecodat2$Time * 60
+```
+
+### Prepare the OSR data
+
+```{r OSR data, eval=TRUE}
+# males per female
+ecodat2$OSR <- (ecodat2$Male+1) / (ecodat2$Female+1)
+```
+
+### How are the raw density and OSR data distributed
+For Fig. 3c
+
+```{r plot-dem-data}
+pdat <- ggplot(data = ecodat2, aes(x = log(OSR), y = log(dens), colour = FemState)) +
+  geom_point(alpha = 0.7, size = 1) +
+  labs(x = "Log operational sex ratio", y = "Log adult density") +
+  
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE), color = NULL) +
+  scale_fill_manual(
+    breaks = c(0,1,2),
+    values = pal[c(1,12,7)],
+    labels = c("SM", "FP", "SD"),
+    name = "Colour state"
+  ) +
+  scale_colour_manual(
+    breaks = c(0,1,2),
+    values = pal[c(1,12,7)],
+    labels = c("SM", "FP", "SD"),
+    name = "Colour state"
+  ) +
+  theme_minimal(base_size = 8) 
+pdat  
+
+#ggsave(pdat, 
+#       filename = "~/Dropbox/Doctorado/COEN_Comparative/Writing/Figures/De_dat.pdf", device = "pdf", units = "mm", width = 60, height = 40)
+```
+
+```{r plot dem data-supporting, eval=FALSE, echo=FALSE}
+
+ecodat2 <- ecodat2 %>%
+    mutate(top20 = ifelse(dens > 31.5 & OSR > 4, 1, 0))
+
+pdat2 <- ggplot(data = ecodat2, 
+               aes(x = log(OSR), y = log(dens), colour = FemState, 
+                   shape = as.factor(top20), size = as.factor(top20))) +
+  geom_point(alpha = 0.7) +
+  geom_vline(xintercept = log(4), colour = "grey20", lty = 2) +
+  geom_hline(yintercept = log(31.5), colour = "grey20", lty = 2) +
+  labs(x = "Log operational sex ratio", y = "Log adult density") +
+  
+  guides(fill = guide_legend(ncol = 1, byrow = TRUE), color = NULL) +
+  scale_fill_manual(
+    breaks = c(0,1,2),
+    values = pal[c(1,12,7)],
+    labels = c("SM", "FP", "SD"),
+    name = "Colour state"
+  ) +
+  scale_colour_manual(
+    breaks = c(0,1,2),
+    values = pal[c(1,12,7)],
+    labels = c("SM", "FP", "SD"),
+    name = "Colour state"
+  ) +
+  scale_shape_manual(
+    values = c("circle", "square"),
+    guide = "none")  +
+  scale_size_manual(
+    values = c(1.5, 2.5),
+    guide = "none"
+  ) +
+  theme_minimal(base_size = 8) + 
+  theme(panel.grid = element_blank())
+pdat2  
+
+#ggsave(pdat2, 
+       filename = "~/Dropbox/Doctorado/COEN_Comparative/Writing/Figures/De_dat_sum.pdf", device = "pdf", units = "mm", width = 120, height = 80)
+```
+
+
+### Effects of adult density on the occurrence of FPs
+In *Model 3* we ask if the probability of FP increases with adult density at breeding sites.
+
+#### Run the model
+
+```{r dens-FP run, eval=TRUE}
+inv.phylo<-inverseA(ecotre2,nodes="TIPS",scale=TRUE) 
+
+# residual covariance matrix 1/J*(I+J), I and J are identity and unit matrices respectively
+IJ <- (1/3) * (diag(2) + matrix(1, 2, 2))
+
+# kronecker prior for fixed effect close to being flat for the 2 way:
+#(0 vs.1 , 1 vs. 2 and 0 vs. 2) marginal probabilities within each fixed effect
+
+prDem1 = list(
+  B = list(mu = rep(0, 4), V = diag(4) * (1.7 + pi ^ 2 / 3)),
+  R = list(V = IJ, fix = 1),
+  G = list(
+    G1 = list(
+      V = 1,
+      nu = 1000,
+      alpha.mu = rep(0, 1),
+      alpha.V = diag(1)
+    ),
+    G2 = list(
+      V = 1,
+      nu = 1000,
+      alpha.mu = rep(0, 1),
+      alpha.V = diag(1)
+    )
+  )
+)
+
+
+# the model for the effect of density
+# with SM as baseline
+mm3.1 <- MCMCglmm(
+  relevel(FemState, ref = "0") ~ trait + log(dens):trait,
+  random = ~ Site + Taxon,
+  rcov = ~ us(trait):units,
+  ginverse = list(Taxon = inv.phylo$Ainv),
+  family = "categorical",
+  data = ecodat2,
+  prior = prDem1,
+  pl = TRUE,
+  slice = TRUE,
+  nitt = 330000,
+  burnin = 30000,
+  thin = 100,
+  verbose = F
+)
+
+# with SD as baseline
+mm3.2 <- MCMCglmm(
+  relevel(FemState, ref = "2") ~ trait + log(dens):trait,
+  random = ~ Site + Taxon,
+  rcov = ~ us(trait):units,
+  ginverse = list(Taxon = inv.phylo$Ainv),
+  family = "categorical",
+  data = ecodat2,
+  prior = prDem1,
+  pl = TRUE,
+  slice = TRUE,
+  nitt = 330000,
+  burnin = 30000,
+  thin = 100,
+  verbose = F
+)
+```
+
+#### Get estimates in response scale
+
+```{r dens-FP predicted}
+# rescale estimates assuming residual covariance matrix of zero
+Delta <- cbind(c(-1, 1, 0), c(-1, 0, 1))
+c2 <- (16 * sqrt(3)/(15 * pi))^2
+D <- ginv(Delta %*% t(Delta)) %*% Delta
+
+dens<-log(ecodat2$dens)
+
+# make the estimate data frame
+Pred<-data.frame(SM.mean = numeric(length = length(dens)),
+                 FP.mean = numeric(length = length(dens)),
+                 SD.mean = numeric(length = length(dens)),
+                 SM.lwr = numeric(length = length(dens)),
+                 FP.lwr = numeric(length = length(dens)),
+                 SD.lwr = numeric(length = length(dens)),
+                 SM.upr = numeric(length = length(dens)),
+                 FP.upr = numeric(length = length(dens)),
+                 SD.upr = numeric(length = length(dens)))
+Pred$dens <- dens
+
+Int<-data.frame(SM = numeric(length = 2*nrow(mm3.1$Sol)),
+                FP = numeric(length = 2*nrow(mm3.1$Sol)),
+                SD = numeric(length = 2*nrow(mm3.1$Sol)))
+
+for (i in 1:length(dens)){
+  
+  # rescale the estimates as if the residual covariance matrix was zero
+  Int1 <- t(apply((mm3.1$Sol[, 1:2]+dens[i]*mm3.1$Sol[, 3:4]), 1, function(x) {
+    D %*% (x/sqrt(1 + c2 * diag(IJ))
+    )
+  }))
+
+ Int2 <- t(apply((mm3.2$Sol[, 1:2]+dens[i]*mm3.2$Sol[, 3:4]), 1, function(x) {
+    D %*% (x/sqrt(1 + c2 * diag(IJ))
+    )
+  }))
+ 
+ Int <- rbind(Int1, Int2[,c(2,3,1)])
+ 
+  # median probability
+  Pred$SM.mean[i] <- mean(mcmc(exp(Int[,1])/rowSums(exp(Int))))
+  Pred$FP.mean[i] <- mean(mcmc(exp(Int[,2])/rowSums(exp(Int))))
+  Pred$SD.mean[i] <- mean(mcmc(exp(Int[,3])/rowSums(exp(Int))))
+  
+  # lower HPD interval
+  Pred$SM.lwr[i] <- HPDinterval(mcmc(exp(Int[,1])/rowSums(exp(Int))))[1]
+  Pred$FP.lwr[i] <- HPDinterval(mcmc(exp(Int[,2])/rowSums(exp(Int))))[1]
+  Pred$SD.lwr[i] <- HPDinterval(mcmc(exp(Int[,3])/rowSums(exp(Int))))[1]
+  
+  # upper HPD interval
+  Pred$SM.upr[i] <- HPDinterval(mcmc(exp(Int[,1])/rowSums(exp(Int))))[2]
+  Pred$FP.upr[i] <- HPDinterval(mcmc(exp(Int[,2])/rowSums(exp(Int))))[2]
+  Pred$SD.upr[i] <- HPDinterval(mcmc(exp(Int[,3])/rowSums(exp(Int))))[2]
+}
+```
+
+#### Plot predicted
+
+```{r dens-FP-predicted-plotting}
+# melt for plotting
+Pred$sample <- rownames(Pred)
+
+Pdat <- data.frame(dens = rep(dens,3))
+Pdat$FemState <- rep(c("SM","FP", "SD"), each = length(dens))
+
+Pdat$mean <- reshape::melt(Pred[,c(11,1:3)], id.vars = "sample")[,3]
+Pdat$lwr <- reshape::melt(Pred[,c(11,4:6)], id.vars = "sample")[,3]
+Pdat$upr <- reshape::melt(Pred[,c(11,7:9)], id.vars = "sample")[,3]
+
+#head(Pdat)
+
+# get species data points
+Mdata <- data.frame(taxon = ecodat2$Taxon,
+                  dens = log(ecodat2$dens), 
+                  SM = numeric(length(ecodat2$Taxon)),
+                  FP = numeric(length(ecodat2$Taxon)),
+                  SD = numeric(length(ecodat2$Taxon)))
+
+for (i in 1:nrow(Mdata)){ 
+  if(ecodat2$FemState[i] == 0){
+    Mdata$SM[i] <- 1}
+  else{
+    if(ecodat2$FemState[i] == 1){
+      Mdata$FP[i] <-1}
+    else{
+      Mdata$SD[i] <-1
+    }
+  }
+}
+
+#head(Mdata)
+# melt for plotting
+MdataPlot <- reshape::melt(Mdata, id.vars = c("taxon", "dens"))
+colnames(MdataPlot)[3:4] <- c("FemState", "mean")
+
+pal <- wes_palette("Zissou1", 12, type = "continuous")
+p3.2 <- ggplot(data = Pdat, aes(x=dens, y =mean, color = FemState ))+
+  geom_line(linewidth=0.5, show.legend = NA)+
+  theme_bw(base_size = 8)+
+  geom_ribbon(aes(ymax = upr, ymin = lwr, x=dens, fill=FemState),color=NA, alpha = 0.1)+
+  geom_point(data = MdataPlot, aes(color = FemState, fill = FemState), alpha = 0.3 , size = 1, position = position_jitter(height = 0,) )+
+  ylab(label = "Probability of \nsex-related colour state")+
+  xlab(label="Log adult density")+ # xlim(0,80)+
+  scale_color_manual(breaks = c("FP", "SD", "SM"),
+                     values = c(pal[c(11,7,1)]),
+                     name = "Colour state") +
+  scale_fill_manual(breaks = c("FP", "SD", "SM"),
+                    values = c(pal[c(11,7,1)]),
+                    name = "Colour state") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+p3.2
+
+#ggsave(p3.2,  filename = "~/Dropbox/Doctorado/COEN_Comparative/Writing/Figures/dens_FP.pdf", device = "pdf", units = "mm", width = 100, height = 50)
+```
+
+#### Get log-odds estimates
+
+```{r dens-FP-intercepts, eval=TRUE}
+dens<-log(ecodat2$dens)
+
+# make the estimate data frame
+Pred<-data.frame(FPvSM.mean = numeric(length = length(dens)),
+                 FPvSD.mean = numeric(length = length(dens)),
+                 FPvSM.lwr = numeric(length = length(dens)),
+                 FPvSD.lwr = numeric(length = length(dens)),
+                 FPvSM.upr = numeric(length = length(dens)),
+                 FPvSD.upr = numeric(length = length(dens)))
+Pred$dens <- dens
+
+for (i in 1:length(dens)){
+  
+   # median probability
+  Pred$FPvSM.mean[i] <- mean(mm3.1$Sol[,1] + dens[i] * mm3.1$Sol[,3])
+  Pred$FPvSD.mean[i] <- mean(mm3.2$Sol[,2] + dens[i] * mm3.2$Sol[,4])
+ 
+  
+  # lower HPD interval
+  Pred$FPvSM.lwr[i] <- HPDinterval(mcmc(mm3.1$Sol[,1] + dens[i] * mm3.1$Sol[,3]))[1]
+  Pred$FPvSD.lwr[i] <- HPDinterval(mcmc(mm3.2$Sol[,2] + dens[i] * mm3.2$Sol[,4]))[1]
+  
+  # upper HPD interval
+  Pred$FPvSM.upr[i] <- HPDinterval(mcmc(mm3.1$Sol[,1] + dens[i] * mm3.1$Sol[,3]))[2]
+  Pred$FPvSD.upr[i] <- HPDinterval(mcmc(mm3.2$Sol[,2] + dens[i] * mm3.2$Sol[,4]))[2]
+ 
+}
+
+
+```
+
+#### Plot log odds
+
+```{r dens-FP-logodd-plotting}
+# melt for plotting
+Pred$sample <- rownames(Pred)
+
+Pdat <- data.frame(dens = rep(dens,2))
+Pdat$FemState <- rep(c("FPvsSM","FPvsSD"), each = length(dens))
+
+Pdat$mean <- reshape::melt(Pred[,c(8,1:2)], id.vars = "sample")[,3]
+Pdat$lwr <- reshape::melt(Pred[,c(8,3:4)], id.vars = "sample")[,3]
+Pdat$upr <- reshape::melt(Pred[,c(8,5:6)], id.vars = "sample")[,3]
+
+#head(Pdat)
+
+pal <- wes_palette("Zissou1", 12, type = "continuous")
+pm3 <- ggplot(data = Pdat, aes(x=dens, y =mean, color = FemState ))+
+  geom_line(linewidth=1, show.legend = NA)+
+  theme_bw(base_size = 12)+
+  geom_ribbon(aes(ymax = upr, ymin = lwr, x=dens, fill=FemState),color=NA, alpha = 0.1)+
+  ylab(label = "Log-odds ratio of FP vs alternative")+
+  xlab(label="Log population density")+ #xlim(0,80)+
+  scale_color_manual(breaks = c("FPvsSM", "FPvsSD"),
+                     values = c(pal[c(5,9)]),
+                     labels = c("SM", "SD"),
+                     name = "Alternative state") +
+  scale_fill_manual(breaks = c("FPvsSM", "FPvsSD"),
+                    values = c(pal[c(5,9)]),
+                    labels = c("SM", "SD"),
+                    name = "Alternative state") +
+  geom_hline(yintercept = 0, colour = "gray50", lty = 2) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+pm3
+```
+
+#### Hypothesis test
+
+```{r dens-FP-hypothesis}
+n <- nrow(mm3.1$Sol)
+
+Model3.summ <- data.frame(Log_odds = c("FP_vs_SM", "FP_vs_SD"), 
+                          PM = c(mean(mm3.1$Sol[,3]), mean(mm3.2$Sol[,4])),
+                          Lwr = c(HPDinterval(mm3.1$Sol[,3])[1],
+                                  HPDinterval(mm3.2$Sol[,4])[1]),
+                          Upr = c(HPDinterval(mm3.1$Sol[,3])[2],
+                                  HPDinterval(mm3.2$Sol[,4])[2]),
+                          PMCMC = c(sum(mm3.1$Sol[,3] < 0) / n,
+                                    sum(mm3.2$Sol[,4] < 0) / n))
+
+ Model3.summ %>%
+  kbl(booktabs =T, align= c(rep('l',1),rep('r', 4))) %>%
+  kable_styling(latex_options ="striped")
+```
+
+### Effects of OSR on the occurrence of FPs
+
+#### Run the mode
+
+```{r OSR-FP-run}
+
+inv.phylo<-inverseA(ecotre2,nodes="TIPS",scale=TRUE) 
+
+#residual covariance matrix 1/J*(I+J), I and J are identity and unit matrices respectively
+IJ <- (1/3) * (diag(2) + matrix(1, 2, 2))
+
+# kronecker prior for fixed effect close to being flat for the 2 way:
+#(0 vs.1 , 1 vs. 2 and 0 vs. 2) marginal probabilities within each fixed effect
+
+prDem2 = list(
+  B = list(mu = rep(0, 4), V = diag(4) * (1.7 + pi ^ 2 / 3)),
+  R = list(V = IJ, fix = 1),
+  G = list(
+    G1 = list(
+      V = 1,
+      nu = 1000,
+      alpha.mu = rep(0, 1),
+      alpha.V = diag(1)
+    ),
+    G2 = list(
+      V = 1,
+      nu = 1000,
+      alpha.mu = rep(0, 1),
+      alpha.V = diag(1)
+    )
+  )
+)
+
+
+#The model for the effect of OSR
+mm4.1 <- MCMCglmm(
+  relevel(FemState, ref = "0") ~ trait + log(OSR):trait,
+  random = ~ Site + Taxon,
+  rcov = ~ us(trait):units,
+  ginverse = list(Taxon = inv.phylo$Ainv),
+  family = "categorical",
+  data = ecodat2,
+  prior = prDem2,
+  pl = TRUE,
+  slice = TRUE,
+  nitt = 330000,
+  burnin = 30000,
+  thin = 100,
+  verbose = F
+)
+
+mm4.2 <- MCMCglmm(
+  relevel(FemState, ref = "2") ~ trait + log(OSR):trait,
+  random = ~ Site + Taxon,
+  rcov = ~ us(trait):units,
+  ginverse = list(Taxon = inv.phylo$Ainv),
+  family = "categorical",
+  data = ecodat2,
+  prior = prDem2,
+  pl = TRUE,
+  slice = TRUE,
+  nitt = 330000,
+  burnin = 30000,
+  thin = 100,
+  verbose = F
+)
+```
+
+#### Get estimates in response scale
+
+```{r OSR-FP-predicted}
+# rescale estimates assuming residual covariance matrix of zero
+Delta <- cbind(c(-1, 1, 0), c(-1, 0, 1))
+c2 <- (16 * sqrt(3)/(15 * pi))^2
+D <- ginv(Delta %*% t(Delta)) %*% Delta
+
+OSR <- log(ecodat2$OSR)
+
+# make the estimate data frame
+Pred <- data.frame(SM.mean = numeric(length = length(OSR)),
+                 FP.mean = numeric(length = length(OSR)),
+                 SD.mean = numeric(length = length(OSR)),
+                 SM.lwr = numeric(length = length(OSR)),
+                 FP.lwr = numeric(length = length(OSR)),
+                 SD.lwr = numeric(length = length(OSR)),
+                 SM.upr = numeric(length = length(OSR)),
+                 FP.upr = numeric(length = length(OSR)),
+                 SD.upr = numeric(length = length(OSR)))
+Pred$OSR <- OSR
+
+Int <- data.frame(SM = numeric(length = 2*nrow(mm4.1$Sol)),
+                FP = numeric(length = 2*nrow(mm4.1$Sol)),
+                SD = numeric(length = 2*nrow(mm4.1$Sol)))
+
+for (i in 1:length(OSR)){
+  
+  # rescale the estimates as if the residual covariance matrix was zero
+  Int1 <- t(apply((mm4.1$Sol[, 1:2]+OSR[i]*mm4.1$Sol[, 3:4]), 1, function(x) {
+    D %*% (x/sqrt(1 + c2 * diag(IJ))
+    )
+  }))
+
+ Int2 <- t(apply((mm4.2$Sol[, 1:2]+OSR[i]*mm4.2$Sol[, 3:4]), 1, function(x) {
+    D %*% (x/sqrt(1 + c2 * diag(IJ))
+    )
+  }))
+ 
+ Int <- rbind(Int1, Int2[,c(2,3,1)])
+ 
+  # median probability
+  Pred$SM.mean[i] <- mean(mcmc(exp(Int[,1])/rowSums(exp(Int))))
+  Pred$FP.mean[i] <- mean(mcmc(exp(Int[,2])/rowSums(exp(Int))))
+  Pred$SD.mean[i] <- mean(mcmc(exp(Int[,3])/rowSums(exp(Int))))
+  
+  # lower HPD interval
+  Pred$SM.lwr[i] <- HPDinterval(mcmc(exp(Int[,1])/rowSums(exp(Int))))[1]
+  Pred$FP.lwr[i] <- HPDinterval(mcmc(exp(Int[,2])/rowSums(exp(Int))))[1]
+  Pred$SD.lwr[i] <- HPDinterval(mcmc(exp(Int[,3])/rowSums(exp(Int))))[1]
+  
+  # upper HPD interval
+  Pred$SM.upr[i] <- HPDinterval(mcmc(exp(Int[,1])/rowSums(exp(Int))))[2]
+  Pred$FP.upr[i] <- HPDinterval(mcmc(exp(Int[,2])/rowSums(exp(Int))))[2]
+  Pred$SD.upr[i] <- HPDinterval(mcmc(exp(Int[,3])/rowSums(exp(Int))))[2]
+}
+```
+
+#### Plot predicted
+
+```{r OSR-FP-predicted-plotting}
+# melt for plotting
+Pred$sample<-rownames(Pred)
+
+Pdat<-data.frame(OSR = rep(OSR,3))
+Pdat$FemState<-rep(c("SM","FP", "SD"), each = length(OSR))
+
+Pdat$mean<-reshape::melt(Pred[,c(11,1:3)], id.vars = "sample")[,3]
+Pdat$lwr<-reshape::melt(Pred[,c(11,4:6)], id.vars = "sample")[,3]
+Pdat$upr<-reshape::melt(Pred[,c(11,7:9)], id.vars = "sample")[,3]
+
+#head(Pdat)
+
+# get species data points
+Mdata<-data.frame(taxon = ecodat2$Taxon,
+                  OSR = log(ecodat2$OSR), 
+                  SM = numeric(length(ecodat2$Taxon)),
+                  FP = numeric(length(ecodat2$Taxon)),
+                  SD = numeric(length(ecodat2$Taxon)))
+
+for (i in 1:nrow(Mdata)){ 
+  if(ecodat2$FemState[i] == 0){
+    Mdata$SM[i] <- 1}
+  else{
+    if(ecodat2$FemState[i] == 1){
+      Mdata$FP[i] <-1}
+    else{
+      Mdata$SD[i] <-1
+    }
+  }
+}
+
+#head(Mdata)
+# melt for plotting
+MdataPlot<-reshape::melt(Mdata, id.vars = c("taxon", "OSR"))
+colnames(MdataPlot)[3:4]<-c("FemState", "mean")
+
+pal <- wes_palette("Zissou1", 12, type = "continuous")
+p4.2<-ggplot(data = Pdat, aes(x=OSR, y =mean, color = FemState ))+
+  geom_line(linewidth=0.5, show.legend = NA)+
+  theme_bw(base_size = 8)+
+  geom_ribbon(aes(ymax = upr, ymin = lwr, x=OSR, fill=FemState),color=NA, alpha = 0.1)+
+  geom_point(data = MdataPlot, aes(color = FemState, fill = FemState), alpha = 0.3 , size = 1, position = position_jitter(height = 0,) )+
+  ylab(label = "Probability of \nsex-related colour state")+
+  xlab(label="Log adult OSR")+ # xlim(0,80)+
+  scale_color_manual(breaks = c("FP", "SD", "SM"),
+                     values = c(pal[c(11,7,1)]),
+                     name = "Colour state") +
+  scale_fill_manual(breaks = c("FP", "SD", "SM"),
+                    values = c(pal[c(11,7,1)]),
+                    name = "Colour state") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+p4.2
+
+#ggsave(p4.2, filename = "~/Dropbox/Doctorado/COEN_Comparative/Writing/Figures/OSR_FP.pdf", device = "pdf", units = "mm", width = 120, height = 60)
+```
+
+#### Get log odds estimates
+
+```{r OSR-FP-intercepts}
+OSR <- log(ecodat2$OSR)
+
+# make the estimate data frame
+Pred <- data.frame(FPvSM.mean = numeric(length = length(OSR)),
+                 FPvSD.mean = numeric(length = length(OSR)),
+                 FPvSM.lwr = numeric(length = length(OSR)),
+                 FPvSD.lwr = numeric(length = length(OSR)),
+                 FPvSM.upr = numeric(length = length(OSR)),
+                 FPvSD.upr = numeric(length = length(OSR)))
+Pred$OSR <- OSR
+
+Int<-data.frame(MA = numeric(length = nrow(mm4.1$Sol)),
+                FP = numeric(length = nrow(mm4.1$Sol)),
+                MH = numeric(length = nrow(mm4.1$Sol)))
+
+for (i in 1:length(OSR)){
+  
+   # median probability
+  Pred$FPvSM.mean[i] <- mean(mm4.1$Sol[,1] + OSR[i] * mm4.1$Sol[,3])
+  Pred$FPvSD.mean[i] <- mean(mm4.2$Sol[,2] + OSR[i] * mm4.2$Sol[,4])
+ 
+  
+  # lower HPD interval
+  Pred$FPvSM.lwr[i] <- HPDinterval(mcmc(mm4.1$Sol[,1] + OSR[i] * mm4.1$Sol[,3]))[1]
+  Pred$FPvSD.lwr[i] <- HPDinterval(mcmc(mm4.2$Sol[,2] + OSR[i] * mm4.2$Sol[,4]))[1]
+  
+  # upper HPD interval
+  Pred$FPvSM.upr[i] <- HPDinterval(mcmc(mm4.1$Sol[,1] + OSR[i] * mm4.1$Sol[,3]))[2]
+  Pred$FPvSD.upr[i] <- HPDinterval(mcmc(mm4.2$Sol[,2] + OSR[i] * mm4.2$Sol[,4]))[2]
+ 
+}
+```
+
+#### Plot log odds
+```{r OSR-FP-logodd-plotting}
+# melt for plotting
+Pred$sample<-rownames(Pred)
+
+Pdat<-data.frame(OSR = rep(OSR,2))
+Pdat$FemState<-rep(c("FPvsSM","FPvsSD"), each = length(OSR))
+
+Pdat$mean<-reshape::melt(Pred[,c(8,1:2)], id.vars = "sample")[,3]
+Pdat$lwr<-reshape::melt(Pred[,c(8,3:4)], id.vars = "sample")[,3]
+Pdat$upr<-reshape::melt(Pred[,c(8,5:6)], id.vars = "sample")[,3]
+
+#head(Pdat)
+
+pal <- wes_palette("Zissou1", 12, type = "continuous")
+pm4 <-ggplot(data = Pdat, aes(x=OSR, y =mean, color = FemState ))+
+  geom_line(linewidth=1, show.legend = NA)+
+  theme_bw(base_size = 8)+
+  geom_ribbon(aes(ymax = upr, ymin = lwr, x=OSR, fill=FemState),color=NA, alpha = 0.1)+
+  ylab(label = "Log-odds ratio of FP vs alternative")+
+  xlab(label="Log OSR")+ #xlim(0,80)+
+  scale_color_manual(breaks = c("FPvsSM", "FPvsSD"),
+                     values = c(pal[c(5,9)]),
+                     labels = c("SM", "SD"),
+                     name = "Alternative state") +
+  scale_fill_manual(breaks = c("FPvsSM", "FPvsSD"),
+                    values = c(pal[c(5,9)]),
+                    labels = c("SM", "SD"),
+                    name = "Alternative state") +
+  geom_hline(yintercept = 0, colour = "gray50", lty = 2) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+
+pm4
+```
+
+#### Hypothesis test
+
+```{r OSR-FP-hypothesis}
+n <- nrow(mm4.1$Sol)
+
+Model4.summ <- data.frame(Log_odds = c("FP_vs_SM", "FP_vs_SD"), 
+                          PM = c(mean(mm4.1$Sol[,3]), mean(mm4.2$Sol[,4])),
+                          Lwr = c(HPDinterval(mm4.1$Sol[,3])[1],
+                                  HPDinterval(mm4.2$Sol[,4])[1]),
+                          Upr = c(HPDinterval(mm4.1$Sol[,3])[2],
+                                  HPDinterval(mm4.2$Sol[,4])[2]),
+                          PMCMC = c(sum(mm4.1$Sol[,3] < 0) / n,
+                                    sum(mm4.2$Sol[,4] < 0) / n))
+
+ Model4.summ %>%
+  kbl(booktabs =T, align= c(rep('l',1),rep('r', 4))) %>%
+  kable_styling(latex_options ="striped")
+```
+
+## Is population density higher in the temperate zone?
+See introduction in Willink *et al.* (2024) for the rationale of this hypothesis. 
+
+### Data summary
+First plot raw data
+
+```{r-plot-dem-eco-dat}
+ecodat2$combined <- paste(ecodat2$Lat,ecodat2$Hab, sep = "-")
+
+pdem_eco <- ggplot(data = ecodat2, aes(x = combined, y = log(dens), colour = FemState)) +
+  geom_jitter(width = 0.2, size = 1.5, alpha = 0.7)+
+  theme_bw(base_size = 8) +
+  labs(x = "Latitude-habitat", y = "Log adult density") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+   scale_fill_manual(
+    breaks = c(0,1,2),
+    values = pal[c(1,12,7)],
+    labels = c("SM", "FP", "SD"),
+    name = "Colour state"
+  ) +
+  scale_colour_manual(
+    breaks = c(0,1,2),
+    values = pal[c(1,12,7)],
+    labels = c("SM", "FP", "SD"),
+    name = "Colour state"
+  ) +
+  scale_x_discrete(labels = c("temperate-closed", "temperate-open", "tropical-closed", "tropical-open")) +
+  theme(axis.text.x = element_text(angle = 10, vjust = 0.85))
+
+#ggsave(pdem_eco, filename = "~/Dropbox/Doctorado/COEN_Comparative/Writing/Figures/dens_eco1.pdf", device = "pdf", units = "mm", width = 120, height = 80)
+```
+
+### Model 5: total adults by habitat and sampling effort
+
+In *Model 5* we estimated the number of adults for each latitude-habitat combination at the average sampling effort (i.e. by using the mean-centered catching effort as a covariate).
+
+#### Run the model
+
+```{r Hab-dens-model}
+inv.phylo<-inverseA(ecotre2,nodes="TIPS",scale=TRUE) 
+
+#set prior
+prpois1 = list(R=list(V=1,nu = 0.002),
+               G =list(G1=list(V=diag(1),nu=2,alpha.mu=rep(0,1),alpha.V=diag(1)*1000),
+                       G2=list(V=diag(1),nu=1000,alpha.mu=rep(0,1),alpha.V=diag(1))))
+
+#The model for the interaction term
+#starting value
+mm5 <- MCMCglmm(Total ~ Hab:Lat +  Hab:Lat:TimeC -1,
+                           random = ~Site+Taxon,
+                           ginverse=list(Taxon=inv.phylo$Ainv), 
+                           family ="poisson", data = ecodat2,
+                           prior = prpois1,pl=TRUE,
+                           nitt=330000, burnin=30000, thin=100,verbose = F)
+```
+
+#### Plot predictions
+
+```{r Hab-dens-plot}
+#colnames(ecodat2)
+newdat <- ecodat2[,c(4,5,6,7,8,11,12,13)]
+Pred <- predict.MCMCglmm(mm5, newdata = newdat,interval = "confidence", type = "response")
+
+Pdata <- cbind(newdat, Pred)
+Pdata$Eco <- paste(Pdata$Lat, Pdata$Hab, sep = "_")
+Pdata$Lat <- recode(Pdata$Lat, "Trp" = "Tropical", "Tmp" = "Temperate")
+Pdata <- Pdata[!Pdata$Taxon == "Xanthocnemis_zealandica",]
+
+pal <- wes_palette("Zissou1", 12, type = "continuous")
+
+p5 <- ggplot(data = Pdata, aes(x=TimeC, y =fit, color = Eco ))+
+  labs(title = "", x="Catching effort", y="Number of individuals") + 
+  geom_line(linewidth=0.5, show.legend = NA)+
+ # xlim(0,400)+
+  #ylim(0,80)+
+  theme_bw(base_size = 8)+
+  #facet_wrap(~Lat, ncol = 2)+
+  geom_ribbon(data = Pdata,aes(ymax = upr, ymin = lwr, x=TimeC, fill=Eco),color=NA, alpha = 0.1)+
+  geom_point(aes(y =Total, fill = Eco), size=1 , alpha = 0.3)+ 
+  scale_fill_manual(
+    breaks = c("Trp_C", "Trp_O", "Tmp_C", "Tmp_O"),
+    values = pal[c(12, 8, 5, 1)],
+    labels = c(
+      "tropical-closed",
+      "tropical-open",
+      "temperate-closed",
+      "t
+      emperate-open"
+    ),
+    name = "Latitude-habitat"
+  ) + 
+ scale_colour_manual(
+    breaks = c("Trp_C", "Trp_O", "Tmp_C", "Tmp_O"),
+    values = pal[c(12, 8, 5, 1)],
+    labels = c(
+      "tropical-closed",
+      "tropical-open",
+      "temperate-closed",
+      "temperate-open"
+    ),
+    name = "Latitude-habitat"
+  ) +
+  guides(fill=guide_legend(nrow=2,byrow=TRUE)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+  theme(legend.position = "top")
+
+p5
+ 
+#ggsave(p5, filename = "~/Dropbox/Doctorado/COEN_Comparative/Writing/Figures/dens_eco2.pdf", device = "pdf", units = "mm", width =70, height = 70)
+```
+
+#### Hypotheses testing
+
+```{r ecology-dem-Htests, eval=TRUE}
+
+# Temperate vs tropical in open
+LatO_m <- mean(mm5$Sol[,2] - mm5$Sol[,4])
+LatO_l <- HPDinterval(mm5$Sol[,2] - mm5$Sol[,4])[1]
+LatO_u <- HPDinterval(mm5$Sol[,2] - mm5$Sol[,4])[2]
+LatO_p <- sum(mm5$Sol[,2] - mm5$Sol[,4] < 0) / n
+
+# Temperate vs tropical in closed
+LatC_m <- mean(mm5$Sol[,1] - mm5$Sol[,3])
+LatC_l <- HPDinterval(mm5$Sol[,1] - mm5$Sol[,3])[1]
+LatC_u <- HPDinterval(mm5$Sol[,1] - mm5$Sol[,3])[2]
+LatC_p <- sum(mm5$Sol[,1] - mm5$Sol[,3] < 0) / n
+
+# Open vs closed in Temperate
+HabTmp_m <- mean(mm5$Sol[,2] - mm5$Sol[,1])
+HabTmp_l <- HPDinterval(mm5$Sol[,2] - mm5$Sol[,1])[1]
+HabTmp_u <- HPDinterval(mm5$Sol[,2] - mm5$Sol[,1])[2]
+HabTmp_p <- sum(mm5$Sol[,2] - mm5$Sol[,1] < 0) / n
+
+# Open vs closed in Tropical
+HabTrp_m <- mean(mm5$Sol[,4] - mm5$Sol[,3])
+HabTrp_l <- HPDinterval(mm5$Sol[,4] - mm5$Sol[,3])[1]
+HabTrp_u <- HPDinterval(mm5$Sol[,4] - mm5$Sol[,3])[2]
+HabTrp_p <- sum(mm5$Sol[,4] - mm5$Sol[,3] < 0) / n
+
+# combine in dataframe
+Dens_tests <- data.frame(Comparsion = c("temperate-open vs tropical-open",
+                                      "temperate-closed vs tropical-closed",
+                                      "tropical-open vs tropical-closed",
+                                      "temperate-open vs temperate-closed"),
+                       Mean = c(LatO_m, LatC_m, HabTr_m, HabTmp_m),
+                       Lower =  c(LatO_l, LatC_l, HabTrp_l, HabTmp_l),
+                       Upper =  c(LatO_u, LatC_u, HabTrp_u, HabTmp_u),
+                       PMCMC =  c(LatO_p, LatC_p, HabTrp_p, HabTmp_p))
+
+Dens_tests  %>%
+  kbl(booktabs =T, align= c(rep('l',1),rep('r', 4))) %>%
+  kable_styling(latex_options ="striped")
+
+#write.table(Dens_tests, file = "../output/glmm/mm5_Htests.tsv", sep = "\t", row.names = F, quote = F)
+```
+
+## Are ecological effects mediated by demographic effects?
+
+In *Model 6* we repeat the analysis of ecological effects on the occurrence of FP (*Model 2*), but statistically controlling for the demographic effect of adult density. If ecological effects are indeed entirely mediated by density we expect that once we know the density of a population, knowing its habitat and latitudinal range should not change our believe of the probability of FPs. In other words, the large effect of open habitats in temperate regions should disappear once we control for density.
+
+### Run the model
+
+```{r ecology-dem-run}
+# we need a matrix of phylogenetic distances to account for shared evolutionary history
+inv.phylo <- inverseA(ecotre2, nodes = "TIPS", scale = TRUE)
+
+# residual covariance matrix 1/J*(I+J), I and J are identity and unit matrices respectively
+IJ <- (1/3) * (diag(2) + matrix(1, 2, 2))
+
+# kronecker prior for fixed effect close to being flat for the 2 way:
+#(0 vs.1 , 1 vs. 2 and 0 vs. 2) marginal probabilities within each fixed effect
+pr6 <- list(
+  B = list(mu = rep(0, 16), V = diag(16) * (1.7 + pi ^ 2 / 3)),
+  R = list(V = IJ, fix = 1),
+  G = list(
+    G1 = list(
+      V = IJ,
+      nu = 1000,
+      alpha.mu = rep(0, 2),
+      alpha.V = diag(2)
+    ),
+    G2 = list(
+      V = 1,
+      nu = 1000,
+      alpha.mu = rep(0, 1),
+      alpha.V = diag(1)
+    )
+  )
+)
+
+#Run the model without intercept to estimate the probability of each state in each combination of latitude and habitat
+#starting value
+mm6.1 <-
+  MCMCglmm(
+   relevel(FemState, ref="0") ~ Lat:Hab:trait + Lat:Hab:log(dens):trait -1,
+    random = ~ us(trait):Taxon + Site,
+    rcov = ~ us(trait):units,
+    ginverse = list(Taxon = inv.phylo$Ainv),
+    family = "categorical",
+    data = ecodat2,
+    prior = pr6,
+    pl = TRUE,
+    slice = TRUE,
+    nitt = 1100000,
+    burnin = 100000,
+    thin = 500,
+    verbose = F
+  )
+
+mm6.2 <-
+  MCMCglmm(
+    relevel(FemState, ref="2") ~ Lat:Hab:trait + Lat:Hab:log(dens):trait -1,
+    random = ~ us(trait):Taxon + Site,
+    rcov = ~ us(trait):units,
+    ginverse = list(Taxon = inv.phylo$Ainv),
+    family = "categorical",
+    data = ecodat2,
+    prior = pr6,
+    pl = TRUE,
+    slice = TRUE,
+    nitt = 1100000,
+    burnin = 100000,
+    thin = 500,
+    verbose = F
+  )
+```
+
+### Make log-odds dataset
+```{r log-odds-data}
+LO_dat <- data.frame(model = c(rep("0", 8), rep("1", 8)),
+                     Lat = rep(rep(c("Tmp", "Trp"), each = 4), 2),
+                     Hab = c(rep(rep(c("C", "O"), each = 1),2), rep(rep(c("C", "O"), each = 1),2)),
+                     comp = rep(rep(c("FP vs SM", "FP vs SD"), each = 2), 8),
+                     mean = c(mean(mm2.1$Sol[,7]),
+                               mean(mm2.1$Sol[,3]), 
+                               mean(mm2.2$Sol[,8]), 
+                               mean(mm2.2$Sol[,4]),
+                               mean(mm2.1$Sol[,5]),
+                               mean(mm2.1$Sol[,1]), 
+                               mean(mm2.2$Sol[,6]), 
+                               mean(mm2.2$Sol[,2]),
+                               mean(mm6.1$Sol[,1]),
+                               mean(mm6.1$Sol[,3]), 
+                               mean(mm6.2$Sol[,5]), 
+                               mean(mm6.2$Sol[,7]),
+                               mean(mm6.1$Sol[,2]),
+                               mean(mm6.1$Sol[,4]), 
+                               mean(mm6.2$Sol[,6]), 
+                               mean(mm6.2$Sol[,9])),
+                     lwr = c(HPDinterval(mcmc(mm2.1$Sol[,7 ]))[1],
+                               HPDinterval(mcmc(mm2.1$Sol[,3 ]))[1], 
+                               HPDinterval(mcmc(mm2.2$Sol[,8 ]))[1], 
+                               HPDinterval(mcmc(mm2.2$Sol[,4 ]))[1],
+                               HPDinterval(mcmc(mm2.1$Sol[,5 ]))[1],
+                               HPDinterval(mcmc(mm2.1$Sol[,1 ]))[1], 
+                               HPDinterval(mcmc(mm2.2$Sol[,6 ]))[1], 
+                               HPDinterval(mcmc(mm2.2$Sol[,2 ]))[1],
+                               HPDinterval(mcmc(mm6.1$Sol[,1 ]))[1],
+                               HPDinterval(mcmc(mm6.1$Sol[,3 ]))[1], 
+                               HPDinterval(mcmc(mm6.2$Sol[,5 ]))[1], 
+                               HPDinterval(mcmc(mm6.2$Sol[,7 ]))[1],
+                               HPDinterval(mcmc(mm6.1$Sol[,2 ]))[1],
+                               HPDinterval(mcmc(mm6.1$Sol[,4 ]))[1], 
+                               HPDinterval(mcmc(mm6.2$Sol[,6 ]))[1], 
+                               HPDinterval(mcmc(mm6.2$Sol[,9 ]))[1]),
+                     upr = c(HPDinterval(mcmc(mm2.1$Sol[,7 ]))[2],
+                               HPDinterval(mcmc(mm2.1$Sol[,3 ]))[2], 
+                               HPDinterval(mcmc(mm2.2$Sol[,8 ]))[2], 
+                               HPDinterval(mcmc(mm2.2$Sol[,4 ]))[2],
+                               HPDinterval(mcmc(mm2.1$Sol[,5 ]))[2],
+                               HPDinterval(mcmc(mm2.1$Sol[,1 ]))[2], 
+                               HPDinterval(mcmc(mm2.2$Sol[,6 ]))[2], 
+                               HPDinterval(mcmc(mm2.2$Sol[,2 ]))[2],
+                               HPDinterval(mcmc(mm6.1$Sol[,1 ]))[2],
+                               HPDinterval(mcmc(mm6.1$Sol[,3 ]))[2], 
+                               HPDinterval(mcmc(mm6.2$Sol[,5 ]))[2], 
+                               HPDinterval(mcmc(mm6.2$Sol[,7 ]))[2],
+                               HPDinterval(mcmc(mm6.1$Sol[,2 ]))[2],
+                               HPDinterval(mcmc(mm6.1$Sol[,4 ]))[2], 
+                               HPDinterval(mcmc(mm6.2$Sol[,6 ]))[2], 
+                               HPDinterval(mcmc(mm6.2$Sol[,9 ]))[2])
+                               )
+```
+
+### Plot final log odds data
+
+```{r plot-log-odds}
+LO_dat$eco <- paste(LO_dat$Lat, LO_dat$Hab, sep = "-")
+
+p6 <- ggplot(data = LO_dat, aes(x = eco, y = mean, colour = model)) +
+  geom_pointrange(aes(ymin = lwr, ymax = upr), position = position_dodge(width = 0.3), size = 0.4) +
+  labs(y="Log-odds of FP vs alternative state", x = "Latitude-habitat")+
+  facet_wrap(~comp) +
+  geom_hline(yintercept = 0, colour = "grey50", lty=2)+
+   scale_color_manual(breaks = c("0", "1"),
+                     values = c(pal[c(5,9)]),
+                     labels = c("no", "yes"),
+                     name = "Controlling \nfor density") +
+  scale_x_discrete(labels = c(
+      "Temperate\nclosed",
+      "Temperate\nopen",
+      "Tropical\nclosed",
+      "Tropical\nopen"
+    )) + 
+  theme_bw(base_size = 8) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
+  theme(axis.text.x =  element_text(angle = 15, vjust = 0.85))
+  
+p6
+
+#ggsave(p6, filename = "~/Dropbox/Doctorado/COEN_Comparative/Writing/Figures/Log-odds_mediator.pdf", device = "pdf", units = "mm", width =100, height = 70)
+```

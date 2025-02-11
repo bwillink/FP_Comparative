@@ -1,0 +1,167 @@
+#######################
+# Reading in the Data #
+#######################
+
+
+
+# Global parameters for our analysis
+NUM_TOTAL_SPECIES     = 418
+NUM_STATES            = 3
+NUM_HIDDEN            = 2
+NUM_RATES             = NUM_STATES * NUM_HIDDEN
+H                     = 0.587405
+
+# Read in the observed phylogeny
+data <- readDiscreteCharacterData(cr_fn)
+
+# we need to expand the data to the hidden states
+data_exp <- data.expandCharacters( NUM_HIDDEN )
+
+# Get the names of the taxa in the tree and the age of the tree. We need these later on.
+taxa <- start_tre.taxa()
+tree_length <- start_tre.treeLength()
+
+
+# Create some vector for the moves and monitors of this analysis
+moves    = VectorMoves()
+monitors = VectorMonitors()
+
+
+####################
+# Create the rates #
+####################
+
+### Specify a prior on the speciation and extinction rates
+rate_mean <- (NUM_TOTAL_SPECIES-2) / tree_length
+
+### First, we create the hidden speciation rates
+# We fix the (log) mean of the hidden speciation rate to 1.0, so that these rates are relative
+ln_speciation_hidden_mean <- ln(1.0)
+
+# We draw the standard deviation of the hidden rates from an exponential distribution with mean H
+# (so that we expect the 95% interval of the hidden speciation rate to span 1 order of magnitude).
+speciation_hidden_sd ~ dnExponential( 1.0 / H )
+moves.append( mvScale(speciation_hidden_sd, lambda=1, tune=true, weight=2.0) )
+
+# Create a deterministic variable for the hidden speciation rate categories
+# using a discretized lognormal distribution (the N-quantiles of it)
+speciation_hidden_unormalized := fnDiscretizeDistribution( dnLognormal(ln_speciation_hidden_mean, speciation_hidden_sd), NUM_HIDDEN )
+
+# We normalize the hidden speciation rates by dividing the rates with the main
+# (so the mean of the normalized rates equals to 1.0)
+speciation_hidden := speciation_hidden_unormalized / mean(speciation_hidden_unormalized)
+
+
+
+### Second, we create the hidden extinction rates
+# We fix the (log) mean of the hidden extinction rate to 1.0, so that these rates are relative
+ln_extinction_hidden_mean <- ln(1.0)
+
+# We draw the standard deviation of the hidden extinction rates from an exponential distribution with mean H
+# (so that we expect the 95% interval of the hidden extinction rate to span 1 order of magnitude).
+extinction_hidden_sd ~ dnExponential( 1.0 / H )
+moves.append( mvScale(extinction_hidden_sd, lambda=1, tune=true, weight=2.0) )
+
+# Create a deterministic variable for the hidden extinction rate categories
+# using a discretized lognormal distribution (the N-quantiles of it)
+extinction_hidden_unormalized := fnDiscretizeDistribution( dnLognormal(ln_extinction_hidden_mean, extinction_hidden_sd), NUM_HIDDEN )
+
+# We normalize the hidden extinction rates by dividing the rates with the main
+# (so the mean of the normalized rates equals to 1.0)
+extinction_hidden := extinction_hidden_unormalized / mean(extinction_hidden_unormalized)
+
+
+
+### Third, we create the speciation and extinction rates for the observed states
+for (i in 1:NUM_STATES) {
+
+    ### Create a loguniform distributed variable for the speciation rate
+    speciation_observed[i] ~ dnLoguniform( 1E-6, 1E2)
+    speciation_observed[i].setValue( (NUM_TOTAL_SPECIES-2) / tree_length )
+    moves.append( mvScale(speciation_observed[i],lambda=1.0,tune=true,weight=3.0) )
+
+    ### Create a loguniform distributed variable for the speciation rate
+    extinction_observed[i] ~ dnLoguniform( 1E-6, 1E2)
+    extinction_observed[i].setValue( speciation_observed[i] / 10.0 )
+    moves.append( mvScale(extinction_observed[i],lambda=1.0,tune=true,weight=3.0) )
+
+}
+
+
+
+### Finally, we put the observed and hidden rates together
+for (j in 1:NUM_HIDDEN) {
+    for (i in 1:NUM_STATES) {
+        index = i+(j*NUM_STATES)-NUM_STATES
+        speciation[index] := speciation_observed[i] * speciation_hidden[j]
+        extinction[index] := extinction_observed[i] * extinction_hidden[j]
+    }
+}
+
+
+#########################################################
+# Set up the transition rate matrix for observed states #
+#########################################################
+
+# Each transition rate between observed states are drawn
+# from an exponential distribution with a mean of 10
+# character state transitions over the tree.
+rate_pr := start_tre.treeLength() / 10
+for ( i in 1:(NUM_STATES*(NUM_STATES-1)) ) {
+    transition_rates[i] ~ dnExp(rate_pr)
+    moves.append( mvScale(transition_rates[i],lambda=0.50,tune=true,weight=3.0) )
+}
+
+
+#########################################################
+# Set up the transition rate matrix for hidden states #
+#########################################################
+
+# We assume the transitions among the hidden states
+# are all equal and drawn from an exponential distriubtion.
+hidden_rate ~ dnExponential(rate_pr)
+moves.append( mvScale(hidden_rate,lambda=0.5,tune=true,weight=5) )
+
+for (i in 1:(NUM_HIDDEN * (NUM_HIDDEN - 1))) {
+    R[i] := hidden_rate
+}
+
+######################################################################
+# Create the rate matrix for the combined observed and hidden states #
+######################################################################
+rate_matrix := fnHiddenStateRateMatrix(transition_rates, R, rescaled=false)
+
+
+
+#####################################
+# Set up the root state frequencies #
+#####################################
+
+### Create a constant variable with the prior probabilities of each rate category at the root.
+rate_category_prior ~ dnDirichlet( rep(1,NUM_RATES) )
+moves.append( mvBetaSimplex(rate_category_prior,tune=true,weight=2) )
+moves.append( mvDirichletSimplex(rate_category_prior,tune=true,weight=2) )
+
+
+### Create the fix parameter for the age of the root set to the observed age
+root <- start_tre.rootAge()
+
+
+### rho is the probability of sampling species at the present
+### fix this to 490/1805
+rho <- start_tre.ntips()/1360
+
+
+#### construct a variable for the tree drawn from a birth death process
+timetree ~ dnCDBDP( rootAge           = root,
+                    speciationRates   = speciation,
+                    extinctionRates   = extinction,
+                    Q                 = rate_matrix,
+                    delta             = 1.0,
+                    pi                = rate_category_prior,
+                    rho               = rho,
+                    condition         = "survival" )
+
+### clamp the model with the "observed" tree
+timetree.clamp( start_tre )
+timetree.clampCharData( data_exp )

@@ -1,0 +1,24 @@
+# settings
+
+base_str	= "PolyHiSSE_MAP_coen_prior"
+base_tree_fn	= "Willink_MAP_coen.tree"
+base_cr_fn	= "Fem_colour_coen.nex"
+
+base_fp         = "../"
+
+in_fp           = base_fp + "data/processed/HiSSE/"
+code_fp		= base_fp + "scripts/HiSSE/"
+out_fp          = base_fp + "output/HiSSE/"
+out_str         = base_str 
+
+tree_fn         = in_fp + base_tree_fn
+cr_fn           = in_fp + base_cr_fn
+
+# Load tree
+start_tre <- readTrees(tree_fn)[1]
+
+# load model
+source(code_fp + "HiSSE_module_final.Rev")
+
+# run mcmc
+source(code_fp + "mcmcHiSSE_prior_MAP.Rev")

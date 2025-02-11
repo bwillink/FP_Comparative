@@ -1,0 +1,2 @@
+transition_rates[1]	transition_rates[2]	transition_rates[3]	transition_rates[4]	transition_rates[5]	transition_rates[6]	hidden_rate	extinction_observed[1]	extinction_hidden_sd	extinction_observed[2]	extinction_observed[3]	rate_category_prior	speciation_observed[1]	speciation_hidden_sd	speciation_observed[2]	speciation_observed[3]
+0.0006190428	0.006147865	0.01095896	0.002256862	0.007686684	0.006820717	0.0001125978	0.0001332799	0.1342947	0.02545761	3.905035e-05	[0.0167481,0.221389,0.421345,0.00674585,0.249488,0.0842843]	0.1424354	1.361199	0.2828543	0.199536

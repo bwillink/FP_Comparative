@@ -1,0 +1,30 @@
+# do not track trees from earlier versions
+data/processed/trees
+data/processed/HiSSE/Posterior_trees.trees
+data/processed/HiSSE/Willink_MAP_pruned.tree
+data/processed/HiSSE/Willink_MAP.tree
+
+# do not track early versions of supporting tables
+data/raw/SupportingTableS1.ods
+data/raw/SupportingTableS1.csv
+data/raw/SupportingTableS1_V2.tsv
+
+# do not track scripts from earlier versions (with tree uncertainty)
+scripts/data_prep
+scripts/Hrm
+scripts/phylogeny
+scripts/FP_comparative.Rmd
+scripts/FP_comparative_V2.Rmd
+scripts/HiSSE/Early_runs
+
+# do not track results from earlier versions (with tree uncertainty)
+output/phylogeny
+output/Hrm
+output/HiSSE/Early_runs
+
+# do not track files that are too large
+output/HiSSE/PolyHiSSE_MAP_coen_priorstoch.log
+output/HiSSE/PolyHiSSE_MAP_coen_r1stoch.log
+output/HiSSE/PolyHiSSE_MAP_coen_r2stoch.log
+output/HiSSE/PolyHiSSE_MAP_coen_r1_events.tsv 
+output/HiSSE/PolyHiSSE_MAP_coen_r2_events.tsv 

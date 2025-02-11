@@ -1,0 +1,32 @@
+# settings
+
+base_str	= "PolyHiSSE_MAP_coen_prior"
+base_tree_fn	= "Willink_MAP_coen.tree"
+base_cr_fn	= "Fem_colour_colour.nex"
+
+base_fp         = "../"
+
+in_fp           = base_fp + "data/processed/HiSSE/"
+code_fp		= base_fp + "scripts/HiSSE/"
+out_fp          = base_fp + "output/HiSSE/"
+
+tree_fn         = in_fp + base_tree_fn
+#cr_fn           = in_fp + base_cr_fn
+
+# First tree for burnin
+start_tre <- readTrees(tree_fn)[1]
+
+burnin=0.2
+n_time_slices = 500
+
+# ase tree
+
+anc_states = readAncestralStateTrace(out_fp + base_str + ".states.log")
+anc_tree = ancestralStateTree(tree=start_tre,
+           ancestral_state_trace_vector=anc_states, 
+           include_start_states=false, 
+           file=out_fp + base_str + "_ase.tre", 
+           burnin=burnin, summary_statistic="MAP", 
+           site=1)
+
+q()

@@ -1,0 +1,713 @@
+#NEXUS
+	
+BEGIN DATA;
+
+	DIMENSIONS NTAX=669 NCHAR=1;
+	FORMAT DATATYPE=Standard SYMBOLS= "0123456789ABCDEFGHIJKLMNO" MISSING=? GAP= -;
+	
+	CHARLABELS
+		[1]	'area'
+	;
+	
+	STATELABELS
+		1
+		[0] 'SAm_N 0'
+		[1] 'SAm_E 1'
+		[2] 'SAm_S 2'
+		[3] 'NAm_NW 3'
+		[4] 'NAm_NE 4'
+		[5] 'NAm_SE 5'
+		[6] 'NAm_SW 6'
+		[7] 'Grn 7'
+		[8] 'Eur 8'
+		[9] 'As_C 9'
+		[10] 'As_E A'
+		[11] 'As_SE B'
+		[12] 'As_NE C'
+		[13] 'Afr_W D'
+		[14] 'Afr_S E'
+		[15] 'Afr_E F'
+		[16] 'Afr_N G'
+		[17] 'Aus_W H'
+		[18] 'Aus_E I'
+		[19] 'Ind J'
+		[20] 'Mdg K'
+		[21] 'Ant_W L'
+		[22] 'Ant_E M'
+		[23] 'Mly N'
+		[24] 'NZ O'
+		,
+	;
+
+MATRIX
+	Oxyagrion_ablutum	2
+	Acanthagrion_adustum	(0 1)
+	Acanthagrion_amazonicum	0
+	Acanthagrion_apicale	(0 1)
+	Acanthagrion_cf.abunae	(0 1)
+	Acanthagrion_cf.chararum	(0 1)
+	Acanthagrion_cuyabae	(2 1)
+	Acanthagrion_floridense	0
+	Acanthagrion_fluviatile	1
+	Acanthagrion_gracile	(0 1 2)
+	Acanthagrion_sp3	0
+	Acanthagrion_inexpectum	(0 1)
+	Acanthagrion_lancea	(0 1 2)
+	Acanthagrion_minutum	1
+	Acanthagrion_obsoletum	0
+	Acanthagrion_sp2	0
+	Acanthagrion_phallicorne	0
+	Acanthagrion_rubrifrons	(0 1)
+	Acanthagrion_sp1	-
+	Acanthagrion_temporale	(1 2)
+	Acanthagrion_trilobatum	0
+	Acanthagrion_vidua	0
+	Acanthagrion_yungarum	0
+	Aciagrion_africanum	(D F)
+	Aciagrion_bapepe	D
+	Aciagrion_borneense	(B N)
+	Aciagrion_brosseti	D
+	Aciagrion_hisopa	(B J N)
+	Aciagrion_migratum	(A B)
+	Aciagrion_nodosum	D
+	Aciagrion_occidentale	(B J)
+	Aciagrion_approximans	(B N)
+	Aeolagrion_dorsale	0
+	Aeolagrion_inca	0
+	Aeolagrion_philipi	(0 1 2)
+	Africallagma_elongatum	(E F)
+	Africallagma_glaucum	(D E F)
+	Africallagma_pseudelongatum	F
+	Africallagma_quingentum	F
+	Africallgama_vaginale	(D F)
+	Agriocnemis_argentea	(H I)
+	Agriocnemis_canuango	D
+	Agriocnemis_exilis	(D E F K)
+	Agriocnemis_exsudans	I
+	Agriocnemis_femina	(A B I J N)
+	Agriocnemis_forcipata	(D F)
+	Agriocnemis_inversa	F
+	Agriocnemis_kalinga	(B J)
+	Agriocnemis_keralensis	J
+	Agriocnemis_lacteola	(A B)
+	Agriocnemis_maclachlani	(D F)
+	Agriocnemis_nana	B
+	Agriocnemis_pinheyi	(E F)
+	Agriocnemis_pygmaea	(9 B G H I J K N)
+	Agriocnemis_salomonis	I
+	Agriocnemis_toto	D
+	Agriocnemis_victoria	(D F)
+	Allocnemis_cyanura	D
+	Allocnemis_leucosticta	E
+	Allocnemis_nigripes	(D F)
+	Allocnemis_pauli	(D F)
+	Allocnemis_vicki	D
+	Amazoneura_ephippigera	0
+	Amazoneura_westfalli	0
+	Ischnura_armstrongi	-
+	Ischnura_sp	-
+	Amphiagrion_abbreviatum	(3 6)
+	Amphiagrion_saucium	(4 5)
+	Amphicnemis_ecornuta	(B N)
+	Amphicnemis_gracilis	(B N)
+	Amphicnemis_martini	N
+	Amphicnemis_triplex	N
+	Amphicnemis_wallacii	N
+	Andinagrion_garrisoni	2
+	Anisagrion_allopterum	0
+	Anisagrion_inornatum	0
+	Anisagrion_kennedyi	0
+	Anomisma_abnorme	0
+	Apanisagrion_lais	(0 6)
+	Arabicnemis_caerulea	G
+	Archibasis_melanocyana	(B N)
+	Archibasis_rebeccae	(B N)
+	Archibasis_viola	(B N)
+	Argentagrion_ambiguum	2
+	Argia_adamsi	0
+	Argia_agrioides	(3 6)
+	Argia_alberta	(3 6)
+	Argia_albistigma	2
+	Argia_anceps	0
+	Argia_apicalis	(4 5 3 6)
+	Argia_barretti	6
+	Argia_bipunctulata	(5 6)
+	Argia_botacudo	(0 1)
+	Argia_calida	(0 6)
+	Argia_cf.serva	2
+	Argia_chapadae	1
+	Argia_chelata	0
+	Argia_claussenii	(1 2)
+	Argia_collata	0
+	Argia_concinna	0
+	Argia_croceipennis	2
+	Argia_cupraurea	0
+	Argia_cuprea	6
+	Argia_difficilis	0
+	Argia_dives	0
+	Argia_emma	3
+	Argia_euphorbia	0
+	Argia_extranea	(0 6)
+	Argia_fissa	0
+	Argia_fraudatricula	0
+	Argia_frequentula	0
+	Argia_fulgida	0
+	Argia_fumigata	0
+	Argia_fumipennis	(4 5 3 6)
+	Argia_funcki	6
+	Argia_garrisoni	6
+	Argia_gaumeri	(0 6)
+	Argia_gerhardi	0
+	Argia_hamulata	0
+	Argia_harknessi	6
+	Argia_herberti	6
+	Argia_hinei	6
+	Argia_huanacina	0
+	Argia_immunda	(0 6)
+	Argia_inculta	0
+	Argia_indicatrix	0
+	Argia_infrequentula	0
+	Argia_insipida	(0 1)
+	Argia_jocosa	0
+	Argia_joergenseni	2
+	Argia_johanella	0
+	Argia_jujuya	2
+	Argia_kokama	0
+	Argia_lacrimans	(0 6)
+	Argia_leonorae	6
+	Argia_lilacina	(1 2)
+	Argia_limitata	0
+	Argia_lugens	6
+	Argia_medullaris	0
+	Argia_meioura	1
+	Argia_modesta	1
+	Argia_moesta	(4 5 6)
+	Argia_mollis	(1 2)
+	Argia_munda	6
+	Argia_nahuana	6
+	Argia_nigrior	0
+	Argia_oculata	(0 1)
+	Argia_oenea	(0 6)
+	Argia_orichalcea	0
+	Argia_pallens	(0 6)
+	Argia_pima	6
+	Argia_plana	(0 6)
+	Argia_pocomana	0
+	Argia_popoluca	0
+	Argia_pulla	(0 1)
+	Argia_reclusa	(1 2)
+	Argia_rhoadsi	6
+	Argia_sabino	6
+	Argia_sedula	(5 6)
+	Argia_smithiana	1
+	Argia_sordida	1
+	Argia_talamanca	0
+	Argia_tamoyo	1
+	Argia_tarascana	6
+	Argia_terira	0
+	Argia_tezpi	(0 6)
+	Argia_tibialis	(4 5 6)
+	Argia_tonto	6
+	Argia_translata	(0 1 2 4 5 6)
+	Argia_ulmeca	0
+	Argia_underwoodi	0
+	Argia_variabilis	0
+	Argia_variegata	0
+	Argia_vivida	(3 6)
+	Argia_westfalli	6
+	Argiocnemis_rubescens_rubeola	(B H I N)
+	Argiocnemis_rubescens_rubescens	(B H I N)
+	Austroagrion_cyane	(H I)
+	Austroagrion_exclamationis	(H I)
+	Austroagrion_watsoni	(H I)
+	Austrocnemis_splendida	I
+	Austrocoenagrion_lyelli	I
+	Azuragrion_buchholzi	D
+	Azuragrion_nigridorsum	(E F G K)
+	Azuragrion_vansomereni	(D F)
+	Bromeliagrion_fernandezianum	0
+	Bromeliagrion_rehni	0
+	Calicnemia_chaseni	B
+	Calicnemia_eximia	(B J)
+	Calicnemia_rectangulata	B
+	Calicnemia_sinensis	(A B)
+	Calvertagrion_declivatum	(0 1)
+	Ceriagrion_aeruginosum	(H I N)
+	Ceriagrion_annulatum	D
+	Ceriagrion_auranticum	(A B N)
+	Ceriagrion_azureum	B
+	Ceriagrion_bakeri	(D F)
+	Ceriagrion_banditum	F
+	Ceriagrion_bellona	N
+	Ceriagrion_calamineum	(B N)
+	Ceriagrion_cerinorubellum	(9 B J N)
+	Ceriagrion_chaoi	B
+	Ceriagrion_corallinum	(D E F)
+	Ceriagrion_coromandelianum	(9 B J) 
+	Ceriagrion_fallax	(A B J)
+	Ceriagrion_glabrum	(D E F G)
+	Ceriagrion_indochinense	B
+	Ceriagrion_junceum	D
+	Ceriagrion_katamborae	E
+	Ceriagrion_kordofanicum	F
+	Ceriagrion_malaisei	B
+	Ceriagrion_melanurum	(A B)
+	Ceriagrion_nipponicum	A
+	Ceriagrion_obfuscans	D
+	Ceriagrion_olivaceum	(B J)
+	Ceriagrion_platystigma	(D F)
+	Ceriagrion_rubellocerinum	D
+	Ceriagrion_sakejii	D
+	Ceriagrion_suave	(D E F)
+	Ceriagrion_tenellum	(8 9 G)
+	Ceriagrion_whellani	(D F)
+	Allocnemis_abbotti	F
+	Allocnemis_marshalli	(E F)
+	Chromagrion_conditum	(4 5)
+	Coeliccia_albicauda	B
+	Coeliccia_axinocercus	N
+	Coeliccia_borneensis	N
+	Coeliccia_cf.kazukoae	B
+	Coeliccia_chromothorax	B
+	Coeliccia_cyaneothorax	N
+	Coeliccia_cyanomelas	(A B)
+	Coeliccia_didyma	B
+	Coeliccia_dinoceras	N
+	Coeliccia_flavicauda	A
+	Coeliccia_flavostriata	N
+	Coeliccia_nemoricola	N
+	Coeliccia_octogesima	B
+	Coeliccia_poungyi	B
+	Coeliccia_ryukyuensis	A
+	Coenagriocnemis_insularis	K
+	Coenagriocnemis_rufipes	K
+	Coenagrion_angulatum	3
+	Coenagrion_caerulescens	(8 G)
+	Coenagrion_ecornutum	(A C)
+	Coenagrion_glaciale	C
+	Coenagrion_hastulatum	(8 A C)
+	Coenagrion_hylas	(9 A C)
+	Coenagrion_intermedium	8
+	Coenagrion_interrogatum	(4 3)
+	Coenagrion_johanssoni	(8 C)
+	Coenagrion_lanceolatum	(A C)
+	Coenagrion_lunulatum	(8 C)
+	Coenagrion_mercuriale	(8 G)
+	Coenagrion_puella	8
+	Coenagrion_pulchellum	(8 9)
+	Coenagrion_resolutum	(4 3 6)
+	Coenagrion_scitulum	(8 9)
+	Coenagrion_terue	A
+	Pseudocopera_annulata	A
+	Copera_congolensis	(D F)
+	Copera_guttifera	D
+	Copera_marginipes	(B J N)
+	Copera_nyansana	(D F)
+	Copera_rufipes	D
+	Copera_sikassoensis	(D F)
+	Pseudocopera_rubripes	A
+	Copera_vittata	(B J N)
+	Coryphagrion_grandis	F
+	Cyanallagma_bonariense	2
+	Cyanallagma_interruptum	2
+	Cyanocnemis_aureofrons	I
+	Dolonagrion_fulvellum	0
+	Drepanoneura_muzoni	0
+	Drepanoneura_tennesseni	0
+	Elattoneura_acuta	D
+	Elattoneura_analis	(B N)
+	Elattoneura_aurantiaca	(B N)
+	Elattoneura_aurifex	D
+	Elattoneura_balli	D
+	Elattoneura_caesia	J
+	Elattoneura_centrafricana	D
+	Elattoneura_coomansi	N
+	Elattoneura_frenulata	E
+	Elattoneura_glauca	(D E F)
+	Elattoneura_josemorai	D
+	Elattoneura_lapidaria	E
+	Elattoneura_lliba	(D F)
+	Elattoneura_nigra	(D F)
+	Elattoneura_sp	-
+	Elattoneura_tarbotonorum	E
+	Elattoneura_tenax	J
+	Elattoneura_cellularis	(E F)
+	Elattoneura_tsiamae	D
+	Elattoneura_vittata	D
+	Enallagma_anna	3
+	Enallagma_annexum	(4 3)
+	Enallagma_antennatum	(4 3)
+	Enallagma_aspersum	(4 5 3 6)
+	Enallagma_basidens	(4 5 3 6)
+	Enallagma_boreale	(4 3)
+	Enallagma_cardenium	5
+	Enallagma_carunculatum	(4 3 6)
+	Enallagma_circulatum	(A C)
+	Enallagma_civile	(0 4 5 3 6)
+	Enallagma_clausum	(4 3)
+	Enallagma_coecum	5
+	Enallagma_concisum	5
+	Enallagma_cyathigerum	(8 C)
+	Enallagma_daeckii	(4 5)
+	Enallagma_davisi	5
+	Enallagma_divagans	(4 5 6)
+	Enallagma_doubledayi	(4 5)
+	Enallagma_dubium	(5 6)
+	Enallagma_durum	(4 5 6)
+	Enallagma_ebrium	(4 3)
+	Enallagma_exsulans	(4 5 6)
+	Enallagma_geminatum	(4 5 6)
+	Enallagma_hageni	(4 5 3)
+	Enallagma_minusculum	4
+	Enallagma_novaehispaniae	(0 2 6)
+	Enallagma_pollutum	5
+	Enallagma_praevarum	(3 6)
+	Enallagma_signatum	(4 5 6)
+	Enallagma_sulcatum	5
+	Enallagma_traviatum	(4 5)
+	Enallagma_vernale	4
+	Enallagma_vesperum	(4 5)
+	Enallagma_weewa	(4 5)
+	Epipleoneura_fuscaenea	1
+	Epipleoneura_lamina	0
+	Epipleoneura_metallica	1
+	Epipleoneura_sp	2
+	Epipleoneura_spatulata	1
+	Epipleoneura_venezuelensis	(0 1)
+	Erythromma_humerale	(A C)
+	Erythromma_lindenii	(8 9 G)
+	Erythromma_najas	8
+	Erythromma_viridulum	(8 9)
+	Esme_mudiensis	J
+	Forcepsioneura_sancta	(1 2)
+	Helveciagrion_simulacrum	(0 2)
+	Hesperagrion_heterodoxum	6
+	Homeoura_chelifera	(1 2)
+	Homeoura_lindneri	(1 2)
+	Homeoura_nepos	(1 2)
+	Idiocnemis_obliterata	I
+	Idioneura_ancilla	(1 2)
+	Igneocnemis_antoniae	N
+	Igneocnemis_atripes	N
+	Igneocnemis_flammea	N
+	Indocnemis_ambigua	B
+	Indocnemis_orang	B
+	Inpabasis_hubelli	0
+	Inpabasis_rosea	1
+	Ischnura_asiatica	(A C)
+	Ischnura_aurora	(9 B J I N O)
+	Ischnura_barberi	6
+	Ischnura_capreolus	(0 1 2)
+	Ischnura_cardinalis	-
+	Ischnura_cervula	(3 6)
+	Ischnura_cruzi	0
+	Ischnura_damula	(3 6)
+	Ischnura_demorsa	6
+	Ischnura_denticollis	(3 6)
+	Ischnura_elegans	(8 9 A B J N)
+	Ischnura_erratica	3
+	Ischnura_evansi	(9 G)
+	Ischnura_ezoin	A
+	Ischnura_fluviatilis	(0 1 2)
+	Ischnura_fountaineae	(9 G)
+	Ischnura_foylei	N
+	Ischnura_gemina	3
+	Ischnura_graellsii	(8 9 G)
+	Ischnura_hastata	(0 1 4 5 6)
+	Ischnura_heterosticta	(H I)
+	Ischnura_intermedia	9
+	Ischnura_kellicotti	(4 5)
+	Ischnura_pamelae	I
+	Ischnura_perparva	(3 6)
+	Ischnura_posita	(0 4 5 6)
+	Ischnura_prognata	5
+	Ischnura_pruinescens	I
+	Ischnura_pumilio	(8 9 C G)
+	Ischnura_ramburii	(0 1 2 4 5 6)
+	Ischnura_rufostigma	(B J)
+	Ischnura_saharensis	G
+	Ischnura_senegalensis	(9 A B D E F G J K N)
+	Ischnura_taitensis	-
+	Ischnura_ultima	2
+	Ischnura_verticalis	(4 5 6)
+	Leptagrion_elongatum	2
+	Leptagrion_macrurum	(1 2)
+	Leptagrion_perlongum	(1 2)
+	Leptobasis_lucifer	5
+	Leptobasis_vacillans	(0 1 5)
+	Lieftinckia_lairdi	I
+	Lochmaeocnemis_malacodora	I
+	Matticnemis_doi	B
+	Platystigma_astictum	(1 2)
+	Platystigma_jocaste	(0 1)
+	Mecistogaster_linearis	(0 1 2)
+	Mecistogaster_lucretia	(0 1 2)
+	Platystigma_martinezi	(0 1)
+	Mecistogaster_modesta	0
+	Megalagrion_blackburni	-
+	Megalagrion_calliphya	-
+	Megalagrion_eudytum	-
+	Megalagrion_hawaiiense	-
+	Megalagrion_heterogamias	-
+	Megalagrion_nigrohamatum	-
+	Megalagrion_oahuense	-
+	Megalagrion_oresitrophum	-
+	Megalagrion_paludicola	-
+	Megalagrion_vagabundum	-
+	Megaloprepus_caerulatus	0
+	Melanesobasis_corniculata	I
+	Melanesobasis_flavilabris	I
+	Melanesobasis_mcleani	I
+	Mesamphiagrion_demarmelsi	0
+	Mesamphiagrion_dunklei	0
+	Mesocnemis_robusta	(D F)
+	Mesocnemis_singularis	(D E F)
+	Mesoleptobasis_acuminata	0
+	Mesoleptobasis_cantralli	0
+	Mesoleptobasis_elongata	1
+	Metacnemis_valida	E
+	Metaleptobasis_byrsonima	0
+	Metaleptobasis_mauffrayi	0
+	Metaleptobasis_bicornis	(0 1)
+	Metaleptobasis_minteri	0
+	Metaleptobasis_quadricornis	(0 1)
+	Metaleptobasis_sp	2
+	Microstigma_anomalum	(1 2)
+	Microstigma_maculatum	1
+	Microstigma_rotundatum	(0 1)
+	Minagrion_mecistogastrum	2
+	Minagrion_waltheri	(1 2)
+	Mortonagrion_aborense	(B N)
+	Mortonagrion_arthuri	(B N)
+	Mortonagrion_hirosei	(A B)
+	Mortonagrion_martini	I
+	Mortonagrion_selenion	(A C)
+	Mortonagrion_stygium	D
+	Nehalennia_gracilis	(4 5)
+	Nehalennia_integricollis	(4 5)
+	Nehalennia_irene	(4 5 3)
+	Nehalennia_minuta	(0 1 5)
+	Nehalennia_pallidula	5
+	Nehalennia_speciosa	(8 A C)
+	Neoerythromma_cultellatum	(0 6)
+	Neoneura_aaroni	6
+	Neoneura_amelia	(0 6)
+	Neoneura_bilinearis	(0 1)
+	Neoneura_confundens	(0 1 2)
+	Neoneura_denticulata	(0 1)
+	Neoneura_esthera	0
+	Neoneura_fulvicollis	(1 2)
+	Neoneura_joana	1
+	Neoneura_kiautai	1
+	Neoneura_leonardoi	2
+	Neoneura_maria	5
+	Neoneura_myrthea	(0 1)
+	Neoneura_rubriventris	(0 1 2)
+	Neoneura_sp	2
+	Neoneura_sylvatica	(1 2)
+	Nesobasis_sp4	I
+	Nesobasis_sp5	I
+	Nesobasis_campioni	I
+	Nesobasis_sp1	I
+	Nesobasis_erythrops	I
+	Nesobasis_flavifrons	I
+	Nesobasis_sp2	I
+	Nesobasis_sp7	I
+	Nesobasis_longistyla	I
+	Nesobasis_sp6	I
+	Nesobasis_sp3	I
+	Nesobasis_sp8	I
+	Nesobasis_telegastrum	I
+	Nososticta_erythrura	I
+	Nososticta_finisterrae	I
+	Nososticta_fraterna	(H I)
+	Nososticta_kalumburu	H
+	Nososticta_liveringa	H
+	Nososticta_salomonis	I
+	Nososticta_solida	I
+	Nososticta_solitaria	I
+	Onychargia_atrocyana	(B J N)
+	Oreocnemis_phoenix	F
+	Oxyagrion_chapadense	(1 2)
+	Oxyagrion_hempeli	(1 2)
+	Oxyagrion_miniopsis	0
+	Oxyagrion_simile	(1 2)
+	Oxyagrion_rubidum	2
+	Oxyagrion_sulmatogrossense	1
+	Oxyagrion_tennesseni	0
+	Oxyagrion_terminale	(1 2)
+	Oxyallagma_dissidens	0
+	Pacificagrion_lachrymosa	-
+	Pacificagrion_sp	-
+	Palaiargia_charmosyna	I
+	Pandanobasis_cantuga	N
+	Papuagrion_marijanmatoki	I
+	Papuagrion_occipitale	I
+	Papuagrion_prothoracale	I
+	Paracercion_ambiguum	B
+	Paracercion_calamorum	(A B C J N)
+	Paracercion_dorothea	B
+	Paracercion_hieroglyphicum	(A C)
+	Paracercion_melanotum	(A B)
+	Paracercion_plagiosum	A
+	Paracercion_sieboldii	A
+	Paracercion_vnigrum	(A C)
+	Paracnemis_alluaudi	K
+	Paramecocnemis_erythrostigma	I
+	Paramecocnemis_stillacruoris	I
+	Pericnemis_lestoides	N
+	Pericnemis_sp1	N
+	Pericnemis_sp2	N
+	Pericnemis_triangularis	N
+	Peristicta_aenoviridis	(1 2)
+	Peristicta_sp	2
+	Phasmoneura_exigua	1
+	Phoenicagrion_flammeum	(0 1)
+	Phoenicagrion_sp	(0 1)
+	Phoenicagrion_spn	(0 1)
+	Phylloneura_westermanni	J
+	Platycnemis_acutipennis	8
+	Platycnemis_echigoana	A
+	Platycnemis_foliacea	A
+	Platycnemis_latipes	8
+	Platycnemis_pennipes	(8 9)
+	Platycnemis_phyllopoda	A
+	Prodasineura_autumnalis	(B N)
+	Prodasineura_collaris	(B N)
+	Prodasineura_croconota	B
+	Prodasineura_dorsalis	N
+	Prodasineura_verticalis	(B J N)
+	Prodasineura_hyperythra	N
+	Prodasineura_integra	N
+	Prodasineura_interrupta	B
+	Prodasineura_notostigma	(B N)
+	Prodasineura_sita	J
+	Proischnura_subfurcata	(D E F)
+	Proplatycnemis_hova	K
+	Proplatycnemis_malgassica	K
+	Proplatycnemis_pembipes	F
+	Proplatycnemis_sanguinipes	K
+	Proplatycnemis_spn.poodle	K
+	Protoneura_ailsa	0
+	Protoneura_amatoria	(0 1)
+	Protoneura_calverti	1
+	Protoneura_cara	(0 6)
+	Protoneura_macintyrei	0
+	Protoneura_paucinervis	0
+	Protoneura_romanae	0
+	Protoneura_scintilla	0
+	Protoneura_sulfurata	0
+	Protoneura_viridis	5
+	Protoneura_woytkowskii	0
+	Psaironeura_bifurcata	0
+	Psaironeura_remissa	0
+	Psaironeura_tenuissima	0
+	Pseudagrion_acaciae	(E F)
+	Pseudagrion_aureofrons	(H I)
+	Pseudagrion_aureolum	D
+	Pseudagrion_australasiae	(B J N)
+	Pseudagrion_bicoerulans	F
+	Pseudagrion_caffrum	E
+	Pseudagrion_citricola	E
+	Pseudagrion_dactylidium	D
+	Pseudagrion_deningi	E
+	Pseudagrion_epiphonematicum	D
+	Pseudagrion_sp	D
+	Pseudagrion_glaucescens	(D E F)
+	Pseudagrion_glaucoideum	D
+	Pseudagrion_glaucum	D
+	Pseudagrion_hageni	(E F)
+	Pseudagrion_hamoni	(D E F G)
+	Pseudagrion_ignifer	I
+	Pseudagrion_incisurum	L
+	Pseudagrion_kersteni	(D E F G)
+	Pseudagrion_kibalense	(D F)
+	Pseudagrion_makabusiense	(D E F)
+	Pseudagrion_malagasoides	D
+	Pseudagrion_massaicum	(E F)
+	Pseudagrion_melanicterum	(D F)
+	Pseudagrion_microcephalum	(B H I J N)
+	Pseudagrion_munte	(D E)
+	Pseudagrion_niloticum	(F G)
+	Pseudagrion_nubicum	(D E F G)
+	Pseudagrion_pacale	D
+	Pseudagrion_pilidorsum	(B N)
+	Pseudagrion_pruinosum	(B J N)
+	Pseudagrion_rubriceps	(B J N)
+	Pseudagrion_salisburyense	(E F)
+	Pseudagrion_samoense	I
+	Pseudagrion_sarepi	(D E)
+	Pseudagrion_serrulatum	D
+	Pseudagrion_sjoestedti	(D E F)
+	Pseudagrion_spencei	(B J)
+	Pseudagrion_spernatum	(E F)
+	Pseudagrion_sublacteum	(D E F G)
+	Pseudagrion_tanganyicum	F
+	Pseudagrion_torridum	(D F G)
+	Pseudocopera_ciliata	B
+	Pyrrhosoma_elisabethae	8
+	Pyrrhosoma_nymphula	(8 G)
+	Ischnura_nursei	(9 B G J)
+	Risiocnemis_appendiculata	N
+	Risiocnemis_erythrua	N
+	Risiocnemis_praeusta	N
+	Salomocnemis_gerdae	I
+	Sangabasis_dentifer	N
+	Schistolobos_boliviensis	(0 1)
+	Spesbona_angusta	E
+	Stenagrion_dubium	N
+	Stenocnemis_pachystigma	D
+	Teinobasis_aeridis	-
+	Teinobasis_alluaudi	(F K)
+	Teinobasis_ariel	-
+	Teinobasis_bradleyi	I
+	Teinobasis_carolinensis	-
+	Teinobasis_cryptica	(B N)
+	Teinobasis_filamenta	N
+	Teinobasis_fortis	-
+	Teinobasis_laidlawi	N
+	Teinobasis_nigrolutea	-
+	Teinobasis_rajah	(B N)
+	Teinobasis_ruficollis	(B N)
+	Teinobasis_rufithorax	I
+	Teinobasis_scintillans	I
+	Teinobasis_sjupp	I
+	Telagrion_longum	2
+	Telebasis_brevis	0
+	Telebasis_byersi	5
+	Telebasis_carmesina	(1 2)
+	Telebasis_carota	0
+	Telebasis_collopistes	0
+	Telebasis_corallina	(0 1 5)
+	Telebasis_demarara	0
+	Telebasis_digiticollis	0
+	Telebasis_dominicana	5
+	Telebasis_dunklei	0
+	Telebasis_filiola	(0 1)
+	Telebasis_garleppi	0
+	Telebasis_gigantea	(0 1)
+	Telebasis_griffinii	(0 1)
+	Telebasis_inalata	(0 2)
+	Telebasis_levis	0
+	Telebasis_livida	0
+	Telebasis_obsoleta	(0 1 2)
+	Telebasis_rubricauda	0
+	Telebasis_salva	(0 6)
+	Telebasis_sanguinalis	(0 1)
+	Telebasis_simulata	1
+	Telebasis_theodori	2
+	Telebasis_vulnerata	5
+	Telebasis_willinki	(1 2)
+	Thaumatagrion_funereum	N
+	Tigriagrion_aurantinigrum	(1 2)
+	Torrenticnemis_filicornis	I
+	Tuberculobasis_geijskesi	0
+	Tuberculobasis_sp	0
+	Vanuatubasis_sp	I
+	Xanthagrion_erythroneura	(H I)
+	Xanthocnemis_tuanuii	O
+	Xanthocnemis_zealandica	O
+	Xiphiagrion_cyanomelas	(N I)
+	Zoniagrion_exclamationis	(3 6)
+	;
+ENDBLOCK;
