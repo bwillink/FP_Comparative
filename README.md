@@ -1,4 +1,4 @@
-# Ecology and sexual conflict drive the macroevolutionary dynamics of inter-sexual mimicry and female-limited colour polymorphisms
+## Ecology and sexual conflict drive the macroevolutionary dynamics of female-limited colour polymorphisms
 
 Willink B, Ho TAT, and Svensson EI
 
