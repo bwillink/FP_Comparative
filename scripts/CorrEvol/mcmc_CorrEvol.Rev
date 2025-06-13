@@ -1,0 +1,65 @@
+#############
+# The Model #
+#############
+
+# initialize the model object #
+mymodel = model(phylogeny)
+# Create a vector of monitors #
+# 1. for the full model #
+monitors.append( mnModel(filename=out_fp+out_str+CHARACTER_A+"_"+CHARACTER_B+"_corr_RJ.log", printgen=100) )
+# 2. and a few select parameters to be printed to the screen #
+monitors.append( mnScreen(printgen=400) )
+# 3. add an ancestral state monitor
+monitors.append( mnJointConditionalAncestralState(tree=phylogeny,
+                                                  ctmc=phyCrs,
+                                                  filename=out_fp+out_str+CHARACTER_A+"_"+CHARACTER_B+"_corr_RJ.states.txt",
+                                                  type="NaturalNumbers",
+                                                  printgen=400,
+                                                  withTips=true,
+                                                  withStartStates=false) )
+# 4. add an stochastic character map monitor
+monitors.append( mnStochasticCharacterMap(ctmc=phyCrs,
+                                          filename=out_fp+out_str+CHARACTER_A+"_"+CHARACTER_B+"_corr_RJ_stoch_char_map.log",
+                                          printgen=400,
+                                          include_simmap=true) )
+                                          
+# Initialize the MCMC object #
+mymcmc = mcmc(mymodel, monitors, moves, nruns=2, combine="mixed")
+
+################
+# The Analysis #
+################
+
+# Run the MCMC #
+mymcmc.burnin( generations = 40000, tuningInterval = 200 )
+mymcmc.run(generations=400000, tuningInterval=1000, checkpointInterval=400, checkpointFile=out_fp+ base_str +CHARACTER_A+"_"+CHARACTER_B+".model.state", underPrior=false)
+
+
+# Read in the tree trace and construct the ancestral states (ASE) #
+anc_states = readAncestralStateTrace(out_fp+out_str+CHARACTER_A+"_"+CHARACTER_B+"_corr_RJ.states.txt")
+anc_tree = ancestralStateTree(tree=phylogeny,
+                              ancestral_state_trace_vector=anc_states,
+                              include_start_states=false, file=out_fp+out_str+CHARACTER_A+"_"+CHARACTER_B+"_ase_corr_RJ.tree",
+                              burnin=0.25,
+                              summary_statistic="MAP",
+                              site=1,
+                              nStates=NUM_STATES_A*NUM_STATES_B)
+
+
+
+# read in the sampled character histories
+anc_states_stoch_map = readAncestralStateTrace(out_fp+out_str+CHARACTER_A+"_"+CHARACTER_B+"_corr_RJ_stoch_char_map.log")
+
+summarizeCharacterMaps(anc_states_stoch_map, phylogeny, file=out_fp+out_str+CHARACTER_A+"_"+CHARACTER_B+"_corr_RJ.events.tsv", burnin=0.25, sep = "\t")
+
+
+# make summary tree
+char_map_tree = characterMapTree(tree=phylogeny,
+                 ancestral_state_trace_vector=anc_states_stoch_map,
+                 character_file=out_fp+out_str+CHARACTER_A+"_"+CHARACTER_B+"_corr_RJ_marginal_character.tree",
+                 posterior_file=out_fp+out_str+CHARACTER_A+"_"+CHARACTER_B+"_corr_RJ_marginal_posterior.tree",
+                 burnin=0.25,
+                 num_time_slices=500)
+
+# Quit RevBayes #
+q()

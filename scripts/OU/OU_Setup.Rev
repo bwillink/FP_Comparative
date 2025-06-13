@@ -1,0 +1,25 @@
+# settings
+
+base_str	= "Density_OU_40_shifts"
+base_tree_fn	= "density.tree"
+cr_fn		= "density.nex"
+
+base_fp         = "../"
+
+in_fp           = base_fp + "data/processed/OU/"
+code_fp		= base_fp + "scripts/OU/"
+out_fp          = base_fp + "output/OU/"
+out_str         = base_str 
+
+tree_fn         = in_fp + base_tree_fn
+cr_fn           = in_fp + cr_fn
+
+# Load tree
+phylogeny <- readTrees(tree_fn)[1]
+
+# load model
+source(code_fp + "relaxed_OU.Rev")
+
+# run mcmc
+source(code_fp + "mcmc_OU.Rev")
+

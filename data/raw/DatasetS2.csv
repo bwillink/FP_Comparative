@@ -1,0 +1,261 @@
+Country,Genus,Species,Taxon,Site,Lat,Hab,FemState,Female,Male,Time
+Guyana,Acanthagrion,adustum,Acanthagrion_adustum,Iwokrama Esequibo River,Trp,O,0,4,15,200
+Guyana,Acanthagrion,apicale,Acanthagrion_apicale,Iwokrama road stream,Trp,C,,0,2,140
+Guyana,Acanthagrion,apicale,Acanthagrion_apicale,Iwokrama road ponds,Trp,C,,0,5,182
+Guyana,Acanthagrion,inexpectum,Acanthagrion_inexpectum,Iwokrama road ponds,Trp,O,0,0,6,145
+Costa Rica,Acanthagrion,inexpectum,Acanthagrion_inexpectum,Pond at La Gamba Rainforest Lodge,Trp,O,0,1,1,30
+Argentina,Acanthagrion,lancea,Acanthagrion_lancea,Garganta trail,Trp,O,0,0,2,126
+Argentina,Acanthagrion,lancea,Acanthagrion_lancea,Yacare Swamp,Trp,O,0,0,5,70
+Argentina,Acanthagrion,lancea,Acanthagrion_lancea,Upper Garganta Puddles,Trp,O,0,0,6,75
+Guyana,Acanthagrion,minutum,Acanthagrion_minutum,Karanambu dam,Trp,O,1,27,42,160
+Costa Rica,Acanthagrion,trilobatum,Acanthagrion_trilobatum,Natural Lake at Barbilla Lodge,Trp,O,0,1,11,126
+Costa Rica,Acanthagrion,trilobatum,Acanthagrion_trilobatum,Tilapia Pond at Barbilla Lodge,Trp,O,0,0,12,123
+Cameroon,Aciagrion,bapepe,Aciagrion_bapepe,Rainforest stream inlet to Dja river,Trp,C,0,1,8,156
+Cameroon,Aciagrion,nodosum,Aciagrion_nodosum,Swamp near village after river crossing Dja,Trp,C,0,2,1,160
+Cameroon,Africallgama,vaginale,Africallgama_vaginale,Rainforest trail between village and Dja river,Trp,C,,0,1,160
+Cameroon,Africallgama,vaginale,Africallgama_vaginale,Swamp near village after river crossing Dja,Trp,C,,0,1,75
+Cameroon,Agriocnemis,exilis,Agriocnemis_exilis,Pond on the  route of Banyon,Trp,O,2,6,7,30
+Cameroon,Agriocnemis,exilis,Agriocnemis_exilis,Tibati wetland,Trp,O,2,13,13,60
+Cameroon,Agriocnemis,forcipata,Agriocnemis_forcipata,river at slaughter house,Trp,O,2,7,3,20
+Cameroon,Agriocnemis,forcipata,Agriocnemis_forcipata,Second stop at Nyong river,Trp,O,2,4,6,24
+Cameroon,Agriocnemis,victoria,Agriocnemis_victoria,Second wetland and marsh at Malambe,Trp,O,2,8,8,20
+Cameroon,Allocnemis,cyanura,Allocnemis_cyanura,Forest stream before rapid section of Dja,Trp,C,0,0,5,120
+Cameroon,Allocnemis,cyanura,Allocnemis_cyanura,Swamp near village after river crossing Dja,Trp,C,0,1,9,395
+Cameroon,Allocnemis,nigripes,Allocnemis_nigripes,Forest stream CM,Trp,C,2,4,4,150
+USA,Amphiagrion,saucium,Amphiagrion_saucium,Webb Mills Boardwalk,Tmp,C,2,0,3,60
+Costa Rica,Anisagrion,allopterum,Anisagrion_allopterum,Trickles and roadside near CIEE,Trp,O,2,14,6,138
+Costa Rica,Anisagrion,allopterum,Anisagrion_allopterum,Bromelia Trail in Finca Leiton,Trp,O,2,7,14,99
+Argentina,Argentagrion,ambiguum,Argentagrion_ambiguum,Marsh North of CP,Trp,O,1,6,9,20
+Argentina,Argentagrion,ambiguum,Argentagrion_ambiguum,Socorro Heron Pond,Trp,O,1,7,14,40
+Argentina,Argentagrion,ambiguum,Argentagrion_ambiguum,Laguna Ibera Bridge,Trp,O,1,16,9,55
+Costa Rica,Argia,adamsi,Argia_adamsi,Stream South of Guacimo,Trp,C,1,2,5,90
+Costa Rica,Argia,adamsi,Argia_adamsi,Silvestre Refugio Rio Piro,Trp,C,1,1,14,140
+Costa Rica,Argia,anceps,Argia_anceps,Bosquecito UCR,Trp,O,2,5,3,30
+USA,Argia,bipunctulata,Argia_bipunctulata,Webb Mills Boardwalk,Tmp,O,2,0,5,60
+Costa Rica,Argia,cupraurea,Argia_cupraurea,Veragua Victoria river 1,Trp,O,2,1,45,135
+Costa Rica,Argia,cupraurea,Argia_cupraurea,Agua Buena Stream,Trp,O,2,10,23,110
+Costa Rica,Argia,cupraurea,Argia_cupraurea,Silvestre Refugio Rio Piro,Trp,O,2,0,3,140
+Costa Rica,Argia,cupraurea,Argia_cupraurea,Veragua Victoria river 2,Trp,O,2,3,6,60
+Costa Rica,Argia,extranea,Argia_extranea,Trickles and roadside near CIEE,Trp,O,2,8,16,138
+Costa Rica,Argia,extranea,Argia_extranea,Bridge over San Luis River,Trp,O,2,5,11,90
+Costa Rica,Argia,extranea,Argia_extranea,Savegre River at Providencia,Trp,O,2,2,3,116
+Costa Rica,Argia,extranea,Argia_extranea,Stream in pasture  Providencia Road,Trp,O,2,3,15,60
+Guyana,Argia,fumigata,Argia_fumigata,Iwokrama road stream,Trp,C,2,1,12,140
+USA,Argia,fumipennis,Argia_fumipennis,Beaver Pond at Stokes State Forest,Tmp,O,2,0,2,60
+USA,Argia,fumipennis,Argia_fumipennis,Mullica River,Tmp,O,2,0,3,90
+USA,Argia,fumipennis,Argia_fumipennis,Ramapo lake,Tmp,O,2,1,11,30
+Costa Rica,Argia,gaumeri,Argia_gaumeri,Pond at La Gamba Rainforest Lodge,Trp,O,0,4,2,30
+Costa Rica,Argia,gaumeri,Argia_gaumeri,SSE River La Selva,Trp,O,0,1,3,30
+Costa Rica,Argia,indicatrix,Argia_indicatrix,Silvestre Refugio Rio Piro,Trp,C,1,1,2,140
+Costa Rica,Argia,medullaris,Argia_medullaris,Bromelia Trail in Finca Leiton,Trp,O,2,3,0,99
+Costa Rica,Argia,medullaris,Argia_medullaris,Trickles and roadside near CIEE,Trp,O,2,1,4,138
+Argentina,Argia,modesta,Argia_modesta,Garganta trail,Trp,O,2,2,9,126
+Guyana,Argia,oculata,Argia_oculata,Iwokrama road stream,Trp,C,1,0,2,140
+Guyana,Argia,oculata,Argia_oculata,Iwokrama Turtle Mt forest,Trp,C,1,7,2,240
+Costa Rica,Argia,oculata,Argia_oculata,Stream South of Guacimo,Trp,C,1,5,18,90
+Costa Rica,Argia,oculata,Argia_oculata,Veragua Froghouse,Trp,C,1,5,1,40
+Costa Rica,Argia,oenea,Argia_oenea,Stream South of Guacimo,Trp,C,1,10,12,90
+Costa Rica,Argia,pulla,Argia_pulla,Large River near Veragua,Trp,O,2,5,15,32
+Costa Rica,Argia,pulla,Argia_pulla,Tilapia Pond at Barbilla Lodge,Trp,O,2,3,5,123
+Costa Rica,Argia,terira,Argia_terira,Stream in pasture  Providencia Road,Tmp,C,2,0,11,60
+Costa Rica,Argia,terira,Argia_terira,Stream in trail near Le Tapir,Tmp,C,2,1,13,180
+USA,Argia,tibialis,Argia_tibialis,Mullica River,Tmp,C,1,1,9,90
+Guyana,Argia,translata,Argia_translata,Iwokrama Kurupakari river,,O,2,1,5,80
+Guyana,Argia,translata,Argia_translata,Iwokrama Esequibo River,,O,2,0,10,200
+Costa Rica,Argia,translata,Argia_translata,Stream South of Guacimo,,C,2,1,1,90
+Costa Rica,Argia,translata,Argia_translata,Silvestre Refugio Rio Piro,,C,2,1,3,140
+Cameroon,Ceriagrion,annulatum,Ceriagrion_annulatum,Forest stream at Mefou Primate Sanctuary,Trp,C,2,0,1,60
+Cameroon,Ceriagrion,annulatum,Ceriagrion_annulatum,Forest stream before rapid section of Dja,Trp,C,2,0,1,120
+Cameroon,Ceriagrion,annulatum,Ceriagrion_annulatum,Rainforest stream deep in Dja,Trp,C,2,1,0,75
+Cameroon,Ceriagrion,annulatum,Ceriagrion_annulatum,River section with rapids near Dja,Trp,C,2,0,1,130
+Cameroon,Ceriagrion,annulatum,Ceriagrion_annulatum,Walk around Dja river near ferry crossing,Trp,C,2,0,2,165
+Cameroon,Ceriagrion,annulatum,Ceriagrion_annulatum,Swamp near village after river crossing Dja,Trp,C,2,5,8,235
+Cameroon,Ceriagrion,glabrum,Ceriagrion_glabrum,Afamba river at Obala,Trp,O,2,0,1,69
+Cameroon,Ceriagrion,glabrum,Ceriagrion_glabrum,River outside Mefou Primate Sanctuary,Trp,O,2,1,2,66
+USA,Chromagrion,conditum,Chromagrion_conditum,Mullica River,Tmp,O,1,0,6,90
+USA,Chromagrion,conditum,Chromagrion_conditum,Beaver Pond at Stokes State Forest,Tmp,O,1,2,15,60
+Sweden,Coenagrion,hastulatum,Coenagrion_hastulatum,Svartavad: Holmeja,Tmp,O,1,10,29,99
+Sweden,Coenagrion,lunulatum,Coenagrion_lunulatum,Vombsjon,Tmp,O,1,15,39,54
+Sweden,Coenagrion,puella,Coenagrion_puella,Hoje A 6,Tmp,O,1,3,9,45
+Sweden,Coenagrion,puella,Coenagrion_puella,Borgeby,Tmp,O,1,5,8,45
+Sweden,Coenagrion,puella,Coenagrion_puella,Genarp,Tmp,O,1,9,16,75
+Sweden,Coenagrion,puella,Coenagrion_puella,Ilstorp,Tmp,O,1,9,46,60
+Sweden,Coenagrion,pulchellum,Coenagrion_pulchellum,Gunnesbo,Tmp,O,1,3,6,15
+Sweden,Coenagrion,pulchellum,Coenagrion_pulchellum,Flackarp,Tmp,O,1,1,8,15
+Sweden,Coenagrion,pulchellum,Coenagrion_pulchellum,Hoje A 6,Tmp,O,1,2,8,15
+Sweden,Coenagrion,pulchellum,Coenagrion_pulchellum,Borgeby,Tmp,O,1,8,13,60
+Sweden,Coenagrion,pulchellum,Coenagrion_pulchellum,Lomma,Tmp,O,1,8,27,30
+Sweden,Coenagrion,pulchellum,Coenagrion_pulchellum,Hoje A 14,Tmp,O,1,18,34,45
+Sweden,Coenagrion,pulchellum,Coenagrion_pulchellum,Genarp,Tmp,O,1,28,52,75
+Cameroon,Copera,congolensis,Copera_congolensis,Rainforest stream inlet to Dja river,Trp,C,2,0,1,156
+Cameroon,Copera,congolensis,Copera_congolensis,Rainforest trail between village and Dja river,Trp,C,2,0,1,160
+Cameroon,Copera,congolensis,Copera_congolensis,Rainforest stream deep in Dja,Trp,C,2,1,2,75
+Cameroon,Copera,congolensis,Copera_congolensis,Forest stream before rapid section of Dja,Trp,C,2,0,7,120
+Cameroon,Copera,congolensis,Copera_congolensis,River section with rapids near Dja,Trp,C,2,2,5,130
+Cameroon,Copera,congolensis,Copera_congolensis,Walk around Dja river near ferry crossing,Trp,C,2,1,13,165
+Cameroon,Copera,congolensis,Copera_congolensis,Forest stream at Mefou Primate Sanctuary,Trp,C,2,1,20,60
+Cameroon,Copera,rufipes,Copera_rufipes,Forest stream before rapid section of Dja,Trp,C,0,0,1,120
+Cameroon,Copera,rufipes,Copera_rufipes,Rainforest stream at the entrance of Dja reserve,Trp,C,0,0,1,75
+Cameroon,Copera,rufipes,Copera_rufipes,Rainforest stream inlet to Dja river,Trp,C,0,0,1,156
+Cameroon,Copera,rufipes,Copera_rufipes,Rainforest trail between village and Dja river,Trp,C,0,0,1,160
+Cameroon,Copera,rufipes,Copera_rufipes,Rainforest stream deep in Dja,Trp,C,0,1,2,75
+Cameroon,Copera,rufipes,Copera_rufipes,Swamp near village after river crossing Dja,Trp,C,0,4,5,235
+Cameroon,Elattoneura,acuta,Elattoneura_acuta,Small stream before rapid section of Dja,Trp,C,2,0,1,60
+Cameroon,Elattoneura,acuta,Elattoneura_acuta,Rainforest trail between village and Dja river,Trp,C,2,0,2,160
+Cameroon,Elattoneura,acuta,Elattoneura_acuta,Walk around Dja river near ferry crossing,Trp,C,2,0,3,165
+Cameroon,Elattoneura,acuta,Elattoneura_acuta,Forest stream before rapid section of Dja,Trp,C,2,0,4,120
+Cameroon,Elattoneura,acuta,Elattoneura_acuta,River section with rapids near Dja,Trp,C,2,1,4,130
+Cameroon,Elattoneura,balli,Elattoneura_balli,Small stream before rapid section of Dja,Trp,C,2,0,1,60
+Cameroon,Elattoneura,balli,Elattoneura_balli,Forest stream before rapid section of Dja,Trp,C,2,2,6,120
+Cameroon,Elattoneura,balli,Elattoneura_balli,stream with pools Nyasosso,Trp,C,2,0,13,80
+Cameroon,Elattoneura,balli,Elattoneura_balli,Farm bush stream Nyasosso,Trp,C,2,2,20,45
+Cameroon,Elattoneura,nigra,Elattoneura_nigra,Boat landing site Djerem river,Trp,C,2,1,1,75
+Cameroon,Elattoneura,nigra,Elattoneura_nigra,Natchigal river at Bachenga,Trp,C,2,0,3,90
+Cameroon,Elattoneura,nigra,Elattoneura_nigra,River outside Mefou Primate Sanctuary,Trp,C,2,2,3,66
+Cameroon,Elattoneura,nigra,Elattoneura_nigra,Afamba river at Obala,Trp,C,2,1,9,69
+Cameroon,Elattoneura,nigra,Elattoneura_nigra,Foulou river,Trp,C,2,1,11,45
+Cameroon,Elattoneura,nigra,Elattoneura_nigra,Stream at Mbam et Djerem Park station,Trp,C,2,17,5,270
+Cameroon,Elattoneura,tsiamae,Elattoneura_tsiamae,Walk around Dja river near ferry crossing,Trp,C,,0,1,165
+Sweden,Enallagma,cyathigerum,Enallagma_cyathigerum,Gunnesbo,Tmp,O,1,1,9,15
+Sweden,Enallagma,cyathigerum,Enallagma_cyathigerum,Hoje A 6,Tmp,O,1,4,14,30
+Sweden,Enallagma,cyathigerum,Enallagma_cyathigerum,Lomma,Tmp,O,1,4,19,30
+Sweden,Enallagma,cyathigerum,Enallagma_cyathigerum,Ilstorp,Tmp,O,1,13,24,30
+Sweden,Enallagma,cyathigerum,Enallagma_cyathigerum,Hoje A 14,Tmp,O,1,14,29,45
+Sweden,Enallagma,cyathigerum,Enallagma_cyathigerum,Vombs Vattenverk,Tmp,O,1,10,36,50
+Sweden,Enallagma,cyathigerum,Enallagma_cyathigerum,Lunnarp,Tmp,O,1,11,48,75
+Sweden,Enallagma,cyathigerum,Enallagma_cyathigerum,Borgeby,Tmp,O,1,25,54,60
+USA,Enallagma,divagans,Enallagma_divagans,Beaver Pond at Stokes State Forest,Tmp,C,0,3,12,60
+USA,Enallagma,divagans,Enallagma_divagans,Red barn brook,Tmp,C,0,3,14,45
+USA,Enallagma,divagans,Enallagma_divagans,Mullica River,Tmp,C,0,8,26,90
+USA,Enallagma,geminatum,Enallagma_geminatum,Barbour Pond,Tmp,O,0,0,1,60
+USA,Enallagma,hageni,Enallagma_hageni,Beaver Pond at Stokes State Forest,Tmp,O,1,0,5,60
+USA,Enallagma,recurvatum,Enallagma_recurvatum,Whites Bog,,,,3,10,60
+Guyana,Epipleoneura,fuscaenea,Epipleoneura_fuscaenea,Iwokrama road stream,Trp,C,0,8,4,140
+Argentina,Epipleoneura,venezuelensis,Epipleoneura_venezuelensis,Garganta trail,Trp,C,0,0,8,126
+Sweden,Erythromma,viridulum,Erythromma_viridulum,Raby,Tmp,O,2,7,16,180
+Argentina,Homeoura,chelifera,Homeoura_chelifera,Laguna Ibera Bridge,Trp,O,1,11,6,55
+Guyana,Homeoura,chelifera,Homeoura_chelifera,Karanambu dam,Trp,O,1,12,8,160
+Argentina,Homeoura,chelifera,Homeoura_chelifera,Information Center,Trp,O,1,29,34,120
+Argentina,Homeoura,lindneri,Homeoura_lindneri,Information Center,Trp,O,1,19,36,120
+Guyana,Ischnura,capreolus,Ischnura_capreolus,Karanambu dam,Trp,O,1,8,4,160
+Argentina,Ischnura,capreolus,Ischnura_capreolus,Carlos Pellegrini Pond,Trp,O,1,5,8,15
+Guyana,Ischnura,capreolus,Ischnura_capreolus,Karanambu river pond,Trp,O,1,5,12,120
+Guyana,Ischnura,capreolus,Ischnura_capreolus,Karanambu pond,Trp,O,1,8,12,120
+Guyana,Ischnura,capreolus,Ischnura_capreolus,Karanambu swamp,Trp,O,1,9,12,100
+Costa Rica,Ischnura,capreolus,Ischnura_capreolus,Tilapia Pond at Barbilla Lodge,Trp,O,1,8,7,157
+Costa Rica,Ischnura,capreolus,Ischnura_capreolus,Trail and Pond near Tempisque Boat Station,Trp,O,1,3,4,80
+Costa Rica,Ischnura,capreolus,Ischnura_capreolus,Las Espuelas Marsh PV,Trp,O,1,17,16,80
+Sweden,Ischnura,elegans,Ischnura_elegans,Genarp,Tmp,O,1,3,5,45
+Cyprus,Ischnura,elegans,Ischnura_elegans,Drouseia 1,Tmp,O,1,3,6,12
+Sweden,Ischnura,elegans,Ischnura_elegans,Hoje A 14,Tmp,O,1,3,6,45
+Sweden,Ischnura,elegans,Ischnura_elegans,Borgeby,Tmp,O,1,5,5,45
+Sweden,Ischnura,elegans,Ischnura_elegans,Hoje A 7,Tmp,O,1,2,8,45
+Cyprus,Ischnura,elegans,Ischnura_elegans,Akdeniz 2,Tmp,O,1,5,8,13
+Sweden,Ischnura,elegans,Ischnura_elegans,Lomma,Tmp,O,1,5,8,45
+Cyprus,Ischnura,elegans,Ischnura_elegans,Farmakas reservoir,Tmp,O,1,5,9,34
+Sweden,Ischnura,elegans,Ischnura_elegans,Habo Gard,Tmp,O,1,5,9,60
+Sweden,Ischnura,elegans,Ischnura_elegans,Ilstorp,Tmp,O,1,5,10,60
+Cyprus,Ischnura,elegans,Ischnura_elegans,Srinevler,Tmp,O,1,8,9,15
+Cyprus,Ischnura,elegans,Ischnura_elegans,Victoria bay,Tmp,O,1,5,12,12
+Cyprus,Ischnura,elegans,Ischnura_elegans,Mangalis reservoir,Tmp,O,1,4,13,32
+Sweden,Ischnura,elegans,Ischnura_elegans,Flackarp,Tmp,O,1,4,15,45
+Cyprus,Ischnura,elegans,Ischnura_elegans,Sotira,Tmp,O,1,9,11,25
+Cyprus,Ischnura,elegans,Ischnura_elegans,Goudi 1,Tmp,O,1,5,17,16
+Sweden,Ischnura,elegans,Ischnura_elegans,Gunnesbo,Tmp,O,1,7,17,45
+Cyprus,Ischnura,elegans,Ischnura_elegans,Goudi 2,Tmp,O,1,5,19,17
+Cyprus,Ischnura,elegans,Ischnura_elegans,Coral bay stream,Tmp,O,1,10,15,25
+Sweden,Ischnura,elegans,Ischnura_elegans,Fly 30 A1,Tmp,O,1,8,17,60
+Cyprus,Ischnura,elegans,Ischnura_elegans,Akdeniz 3,Tmp,O,1,12,14,34
+Cyprus,Ischnura,elegans,Ischnura_elegans,Agridia reservoir,Tmp,O,1,13,17,38
+Sweden,Ischnura,elegans,Ischnura_elegans,Fly 30 A3,Tmp,O,1,11,25,60
+Sweden,Ischnura,elegans,Ischnura_elegans,Hoje A 6,Tmp,O,1,18,27,45
+Cyprus,Ischnura,elegans,Ischnura_elegans,Kanli reservoir,Tmp,O,1,18,34,25
+Cyprus,Ischnura,elegans,Ischnura_elegans,Gonyeli reservoir,Tmp,O,1,20,33,30
+Sweden,Ischnura,elegans,Ischnura_elegans,Vombs Vattenverk,Tmp,O,1,28,33,50
+Cyprus,Ischnura,elegans,Ischnura_elegans,Zakaki,Tmp,O,1,48,46,45
+Cyprus,Ischnura,elegans,Ischnura_elegans,Agioi Vavatsinias reservoir,Tmp,O,1,38,75,50
+Cyprus,Ischnura,elegans,Ischnura_elegans,Kormakitis,Tmp,O,1,54,94,45
+Guyana,Ischnura,hastata,Ischnura_hastata,Karanambu river pond,,O,2,3,0,120
+Guyana,Ischnura,hastata,Ischnura_hastata,Karanambu dam,,O,2,4,5,160
+USA,Ischnura,posita,Ischnura_posita,Barbour Pond,Tmp,C,0,0,1,60
+USA,Ischnura,posita,Ischnura_posita,Webb Mills Boardwalk,Tmp,C,0,1,2,60
+USA,Ischnura,posita,Ischnura_posita,Beaver Pond at Stokes State Forest,Tmp,C,0,5,2,60
+USA,Ischnura,posita,Ischnura_posita,Pakim pond,Tmp,C,0,8,6,20
+USA,Ischnura,posita,Ischnura_posita,Mullica River,Tmp,C,0,14,2,90
+USA,Ischnura,posita,Ischnura_posita,Black river wildlife management area,Tmp,C,0,18,6,30
+USA,Ischnura,posita,Ischnura_posita,Whites Bog,Tmp,C,0,29,15,60
+Sweden,Ischnura,pumilio,Ischnura_pumilio,Svagetorp,Tmp,O,1,23,18,60
+Costa Rica,Ischnura,ramburii,Ischnura_ramburii,Tilapia Pond at Barbilla Lodge,Trp,O,1,1,1,10
+Costa Rica,Ischnura,ramburii,Ischnura_ramburii,Elevated Trail Palo Verde,Trp,O,1,8,4,45
+Costa Rica,Ischnura,ramburii,Ischnura_ramburii,Nicaragua Wetland PV,Trp,O,1,5,5,140
+Costa Rica,Ischnura,ramburii,Ischnura_ramburii,Las Espuelas Marsh PV,Trp,O,1,2,2,80
+Cameroon,Ischnura,senegalensis,Ischnura_senegalensis,Crater lake,,O,1,12,6,114
+USA,Ischnura,verticalis,Ischnura_verticalis,Beaver Pond at Stokes State Forest,Tmp,O,1,3,1,60
+USA,Ischnura,verticalis,Ischnura_verticalis,Barbour Pond,Tmp,O,1,35,38,60
+Costa Rica,Leptobasis,vacillans,Leptobasis_vacillans,Gandoca beach marsh,Trp,O,1,4,7,40
+Guyana,Mecistogaster,lucretia,Mecistogaster_lucretia,Iwokrama road stream,Trp,C,0,0,1,140
+Cameroon,Mesocnemis,singularis,Mesocnemis_singularis,Natchigal river at Bachenga,Trp,O,2,0,2,90
+Cameroon,Mesocnemis,singularis,Mesocnemis_singularis,Boat landing site Djerem river,Trp,O,2,4,15,162
+Guyana,Metaleptobasis,byrsonima,Metaleptobasis_byrsonima,Iwokrama road stream,Trp,C,0,10,1,140
+Costa Rica,Metaleptobasis,byrsonima,Metaleptobasis_byrsonima,Manzanillo trail,Trp,C,0,15,7,282
+Costa Rica,Metaleptobasis,byrsonima,Metaleptobasis_byrsonima,Manzanillo Cacao Plantation,Trp,C,0,5,0,30
+Costa Rica,Metaleptobasis,byrsonima,Metaleptobasis_byrsonima,ManzanilloEntrance,Trp,C,0,0,3,60
+USA,Nehalennia,gracilis,Nehalennia_gracilis,Webb Mills Boardwalk,Tmp,O,1,1,3,60
+USA,Nehalennia,gracilis,Nehalennia_gracilis,Mullica River,Tmp,O,1,7,9,90
+USA,Nehalennia,gracilis,Nehalennia_gracilis,Forest pond by Butterworth Rd,Tmp,O,1,25,25,30
+Guyana,Nehalennia,minuta,Nehalennia_minuta,Karanambu forest,Trp,C,0,2,2,390
+Guyana,Neoneura,joana,Neoneura_joana,Iwokrama Esequibo River,Trp,O,2,1,10,200
+Guyana,Neoneura,myrthea,Neoneura_myrthea,Iwokrama road stream,Trp,C,2,0,5,140
+Argentina,Peristicta,sp,Peristicta_sp,Arroyo Nandu,Trp,C,0,0,1,60
+Argentina,Peristicta,sp,Peristicta_sp,Garganta trail,Trp,C,0,0,5,126
+Guyana,Phoenicagrion,flammeum,Phoenicagrion_flammeum,Karanambu forest,Trp,C,0,8,13,570
+Sweden,Platycnemis,pennipes,Platycnemis_pennipes,Sovdemolla,Tmp,O,2,5,9,120
+Costa Rica,Protoneura,amatoria,Protoneura_amatoria,Natural Lake at Barbilla Lodge,Trp,C,2,1,2,126
+Costa Rica,Protoneura,amatoria,Protoneura_amatoria,SSE River La Selva,Trp,C,2,1,1,30
+Costa Rica,Protoneura,amatoria,Protoneura_amatoria,Stream in Reserva Forestal Dulce ,Trp,C,2,1,1,20
+Guyana,Protoneura,calverti,Protoneura_calverti,Iwokrama road stream,Trp,C,2,0,2,140
+Costa Rica,Psaironeura,remissa,Psaironeura_remissa,Cantarrana to SOR swamp La Selva,Trp,C,2,2,4,99
+Cameroon,Pseudagrion,epiphonematicum,Pseudagrion_epiphonematicum,stream with pools Nyasosso,Trp,C,2,0,6,80
+Cameroon,Pseudagrion,glaucoideum,Pseudagrion_glaucoideum,Forest stream at Mefou Primate Sanctuary,Trp,C,,0,1,60
+Cameroon,Pseudagrion,glaucum,Pseudagrion_glaucum,Forest stream before rapid section of Dja,Trp,C,0,0,1,120
+Cameroon,Pseudagrion,glaucum,Pseudagrion_glaucum,Rainforest stream at the entrance of Dja reserve,Trp,C,0,0,1,75
+Cameroon,Pseudagrion,glaucum,Pseudagrion_glaucum,River outside Mefou Primate Sanctuary,Trp,C,0,0,1,60
+Cameroon,Pseudagrion,glaucum,Pseudagrion_glaucum,Walk around Dja river near ferry crossing,Trp,C,0,0,3,165
+Cameroon,Pseudagrion,glaucum,Pseudagrion_glaucum,Small stream before rapid section of Dja,Trp,C,0,0,4,60
+Cameroon,Pseudagrion,glaucum,Pseudagrion_glaucum,Rainforest trail between village and Dja river,Trp,C,0,1,8,160
+Cameroon,Pseudagrion,kersteni,Pseudagrion_kersteni,Ndom stream with pools,Trp,C,2,0,3,75
+Cameroon,Pseudagrion,malagasoides,Pseudagrion_malagasoides,Swamp near village after river crossing Dja,Trp,C,0,3,1,235
+Cameroon,Pseudagrion,malagasoides,Pseudagrion_malagasoides,Rainforest stream inlet to Dja river,Trp,C,0,2,4,156
+Cameroon,Pseudagrion,malagasoides,Pseudagrion_malagasoides,Walk around Dja river near ferry crossing,Trp,C,0,3,4,165
+Cameroon,Pseudagrion,melanicterum,Pseudagrion_melanicterum,Rainforest stream deep in Dja,Trp,C,0,0,2,75
+Cameroon,Pseudagrion,melanicterum,Pseudagrion_melanicterum,Forest stream at Mefou Primate Sanctuary,Trp,C,0,0,5,60
+Cameroon,Pseudagrion,melanicterum,Pseudagrion_melanicterum,Swamp near village after river crossing Dja,Trp,C,0,5,5,160
+Cameroon,Pseudagrion,melanicterum,Pseudagrion_melanicterum,Rainforest stream at the entrance of Dja reserve,Trp,C,0,1,14,75
+Cameroon,Pseudagrion,melanicterum,Pseudagrion_melanicterum,First forest stream at Mbam Minkoum,Trp,C,0,1,16,42
+Cameroon,Pseudagrion,melanicterum,Pseudagrion_melanicterum,Stream at Toungrolo,Trp,C,0,0,17,33
+Cameroon,Pseudagrion,melanicterum,Pseudagrion_melanicterum,stream with pools Nyasosso,Trp,C,0,0,19,75
+Cameroon,Pseudagrion,nubicum,Pseudagrion_nubicum,Djerem dam beach near Mbakaou,Trp,O,1,2,6,24
+Cameroon,Pseudagrion,nubicum,Pseudagrion_nubicum,Djerem dam,Trp,O,1,32,41,69
+Cameroon,Pseudagrion,serrulatum,Pseudagrion_serrulatum,Forest stream before rapid section of Dja,Trp,C,,0,1,120
+Cameroon,Pseudagrion,sjoestedti,Pseudagrion_sjoestedti,Natchigal river at Bachenga,Trp,O,2,0,1,90
+Cameroon,Pseudagrion,sjoestedti,Pseudagrion_sjoestedti,Small stream before rapid section of Dja,Trp,C,2,0,1,60
+Cameroon,Pseudagrion,sjoestedti,Pseudagrion_sjoestedti,Walk around Dja river near ferry crossing,Trp,C,2,0,1,165
+Cameroon,Pseudagrion,sp,Pseudagrion_sp,Boat landing site Djerem river,Trp,O,2,0,1,87
+Cameroon,Pseudagrion,sp,Pseudagrion_sp,Natchigal river at Bachenga,Trp,O,2,1,1,90
+Cameroon,Pseudagrion,sublacteum,Pseudagrion_sublacteum,Boat landing site Djerem river,Trp,O,2,2,2,162
+Cameroon,Pseudagrion,sublacteum,Pseudagrion_sublacteum,Natchigal river at Bachenga,Trp,O,2,2,4,90
+Cameroon,Pseudagrion,sublacteum,Pseudagrion_sublacteum,Afamba river at Obala,Trp,O,2,0,13,90
+Sweden,Pyrrhosoma,nymphula,Pyrrhosoma_nymphula,Sovdemolla,Tmp,O,1,16,35,120
+Cameroon,Stenocnemis,pachystigma,Stenocnemis_pachystigma,Forest stream CM,Trp,C,,1,8,285
+Argentina,Telagrion,longum,Telagrion_longum,Yacare Swamp,Trp,C,2,1,2,70
+Argentina,Telagrion,longum,Telagrion_longum,Gallery forest trail,Trp,C,2,4,5,120
+Costa Rica,Telebasis,filiola,Telebasis_filiola,Nicaragua Wetland PV,Trp,O,2,12,21,140
+Guyana,Telebasis,simulata,Telebasis_simulata,Iwokrama road ponds,Trp,O,2,1,29,145
+Argentina,Telebasis,willinki,Telebasis_willinki,Gallery forest trail,Trp,O,2,4,4,45
+Argentina,Telebasis,willinki,Telebasis_willinki,Socorro Heron Pond,Trp,O,2,4,4,40
+Argentina,Tigriagrion,aurantinigrum,Tigriagrion_aurantinigrum,Garganta trail,Trp,O,0,0,1,126
+NewZealand,Xanthocnemis,zealandica,Xanthocnemis_zealandica,Woodend Pond,Tmp,O,1,91,410,840
+Costa Rica,Acanthagrion,trilobatum,Acanthagrion_trilobatum,River near Turtle Hostel in Drake,Trp,O,0,0,3,76
+Costa Rica,Neoneura,esthera,Neoneura_esthera,Silvestre Refugio Rio Piro,Trp,C,2,0,12,140
+Costa Rica,Protoneura,amatoria,Protoneura_amatoria,SSE River La Selva,Trp,O,2,0,6,30
+Costa Rica,Telebasis,digiticollis,Telebasis_digiticollis,Natural Lake at Barbilla Lodge,Trp,O,2,0,3,126

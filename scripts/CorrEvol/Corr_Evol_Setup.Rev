@@ -1,0 +1,27 @@
+# settings
+
+base_str	= "CorrEvol_Hab"
+base_tree_fn	= "Hab_full.tree"
+cr_fn1		= "Hab_full_states.nex"
+cr_fn2		= "FP_hab_states.nex"
+
+base_fp         = "../"
+
+in_fp           = base_fp + "data/processed/CorrEvol/"
+code_fp		= base_fp + "scripts/CorrEvol/"
+out_fp          = base_fp + "output/CorrEvol/"
+out_str         = base_str 
+
+tree_fn         = in_fp + base_tree_fn
+cr_fn1           = in_fp + cr_fn1
+cr_fn2           = in_fp + cr_fn2
+
+# Load tree
+phylogeny <- readTrees(tree_fn)[1]
+
+# load model
+source(code_fp + "Corr_Evol_RJ.Rev")
+
+# run mcmc
+source(code_fp + "mcmc_CorrEvol.Rev")
+

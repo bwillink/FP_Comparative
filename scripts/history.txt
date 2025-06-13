@@ -1,100 +1,100 @@
-base_fp         = "../"
-in_fp           = base_fp + "data/processed/HiSSE/"
-code_fp= base_fp + "scripts/Hrm/"
-out_fp          = base_fp + "output/Hrm/"
-out_str         = base_str 
-tree_fn         = in_fp + base_tree_fn
-cr_fn           = in_fp + base_cr_fn
-# load model
-source(code_fp + "Hidden_module.Rev")
-# run mcmc
-source(code_fp + "mcmcHidden_MAP.Rev")
-source("./HiSSE/Annot_tree.Rev");
-base_str= "PolyHiSSE_MAP_coen"
-base_tree_fn= "Willink_MAP_coen.tree"
-base_cr_fn= "Fem_colour_coen.nex"
-base_fp         = "../"
-in_fp           = base_fp + "data/processed/HiSSE/"
-code_fp= base_fp + "scripts/HiSSE/"
-out_fp          = base_fp + "output/HiSSE/"
-out_str         = base_str 
-tree_fn         = in_fp + base_tree_fn
-cr_fn           = in_fp + base_cr_fn
-# First tree for burnin
-start_tre <- readTrees(tree_fn)[1]
+rates[4][2] := rate_loss_A_when_B1 # 11->01
+rates[4][3] := rate_loss_B_when_A1 # 11->10
+Q_crs := fnFreeK(rates, rescaled=FALSE)
+rate_pr := phylogeny.treeLength() / 10
+for (i in 1:4) {
+    for (j in 1:4) {
+        rates[i][j] <- 0.0
+    }
+}
+mix_prob <- 0.5
+rate_gain_A_when_B0 ~ dnExponential( rate_pr )
+rate_gain_A_when_B1 ~ dnReversibleJumpMixture(rate_gain_A_when_B0, dnExponential( rate_pr ), mix_prob)
+rate_loss_A_when_B0 ~ dnExponential( rate_pr )
+rate_loss_A_when_B1 ~ dnReversibleJumpMixture(rate_loss_A_when_B0, dnExponential( rate_pr ), mix_prob)
+rate_gain_B_when_A0 ~ dnExponential( rate_pr )
+rate_gain_B_when_A1 ~ dnReversibleJumpMixture(rate_gain_B_when_A0, dnExponential( rate_pr ), mix_prob)
+rate_loss_B_when_A0 ~ dnExponential( rate_pr )
+rate_loss_B_when_A1 ~ dnReversibleJumpMixture(rate_loss_B_when_A0, dnExponential( rate_pr ), mix_prob)
+prob_gain_A_indep := ifelse( rate_gain_A_when_B0 == rate_gain_A_when_B1, 1.0, 0.0 )
+prob_loss_A_indep := ifelse( rate_loss_A_when_B0 == rate_loss_A_when_B1, 1.0, 0.0 )
+prob_gain_B_indep := ifelse( rate_gain_B_when_A0 == rate_gain_B_when_A1, 1.0, 0.0 )
+prob_loss_B_indep := ifelse( rate_loss_B_when_A0 == rate_loss_B_when_A1, 1.0, 0.0 )
+moves.append( mvScale( rate_gain_A_when_B0, weight=2 ) )
+moves.append( mvScale( rate_gain_A_when_B1, weight=2 ) )
+moves.append( mvScale( rate_loss_A_when_B0, weight=2 ) )
+moves.append( mvScale( rate_loss_A_when_B1, weight=2 ) )
+moves.append( mvScale( rate_gain_B_when_A0, weight=2 ) )
+moves.append( mvScale( rate_gain_B_when_A1, weight=2 ) )
+moves.append( mvScale( rate_loss_B_when_A0, weight=2 ) )
+moves.append( mvScale( rate_loss_B_when_A1, weight=2 ) )
+moves.append( mvRJSwitch(rate_gain_A_when_B1, weight=2.0) )
+moves.append( mvRJSwitch(rate_loss_A_when_B1, weight=2.0) )
+moves.append( mvRJSwitch(rate_gain_B_when_A1, weight=2.0) )
+moves.append( mvRJSwitch(rate_loss_B_when_A1, weight=2.0) )
+rates[1][2] := rate_gain_B_when_A0 # 00->01
+rates[1][3] := rate_gain_A_when_B0 # 00->10
+rates[2][1] := rate_loss_B_when_A0 # 01->00
+rates[2][4] := rate_gain_A_when_B1 # 01->11
+rates[3][1] := rate_loss_A_when_B0 # 10->00
+rates[3][4] := rate_gain_B_when_A1 # 10->11
+rates[4][2] := rate_loss_A_when_B1 # 11->01
+rates[4][3] := rate_loss_B_when_A1 # 11->10
+Q_crs := fnFreeK(rates, rescaled=FALSE)
+rate_pr := phylogeny.treeLength() / 10
+for (i in 1:4) {
+    for (j in 1:4) {
+        rates[i][j] <- 0.0
+    }
+}
+phylogeny <- readTrees(tree_fn)[1]
+rate_pr := phylogeny.treeLength() / 10
+for (i in 1:4) {
+    for (j in 1:4) {
+        rates[i][j] <- 0.0
+    }
+}
+mix_prob <- 0.5
+rate_gain_A_when_B0 ~ dnExponential( rate_pr )
+rate_gain_A_when_B1 ~ dnReversibleJumpMixture(rate_gain_A_when_B0, dnExponential( rate_pr ), mix_prob)
+rate_loss_A_when_B0 ~ dnExponential( rate_pr )
+rate_loss_A_when_B1 ~ dnReversibleJumpMixture(rate_loss_A_when_B0, dnExponential( rate_pr ), mix_prob)
+rate_gain_B_when_A0 ~ dnExponential( rate_pr )
+rate_gain_B_when_A1 ~ dnReversibleJumpMixture(rate_gain_B_when_A0, dnExponential( rate_pr ), mix_prob)
+rate_loss_B_when_A0 ~ dnExponential( rate_pr )
+rate_loss_B_when_A1 ~ dnReversibleJumpMixture(rate_loss_B_when_A0, dnExponential( rate_pr ), mix_prob)
+prob_gain_A_indep := ifelse( rate_gain_A_when_B0 == rate_gain_A_when_B1, 1.0, 0.0 )
+prob_loss_A_indep := ifelse( rate_loss_A_when_B0 == rate_loss_A_when_B1, 1.0, 0.0 )
+prob_gain_B_indep := ifelse( rate_gain_B_when_A0 == rate_gain_B_when_A1, 1.0, 0.0 )
+prob_loss_B_indep := ifelse( rate_loss_B_when_A0 == rate_loss_B_when_A1, 1.0, 0.0 )
+moves.append( mvScale( rate_gain_A_when_B0, weight=2 ) )
+moves.append( mvScale( rate_gain_A_when_B1, weight=2 ) )
+moves.append( mvScale( rate_loss_A_when_B0, weight=2 ) )
+moves.append( mvScale( rate_loss_A_when_B1, weight=2 ) )
+moves.append( mvScale( rate_gain_B_when_A0, weight=2 ) )
+moves.append( mvScale( rate_gain_B_when_A1, weight=2 ) )
+moves.append( mvScale( rate_loss_B_when_A0, weight=2 ) )
+moves.append( mvScale( rate_loss_B_when_A1, weight=2 ) )
+moves.append( mvRJSwitch(rate_gain_A_when_B1, weight=2.0) )
+moves.append( mvRJSwitch(rate_loss_A_when_B1, weight=2.0) )
+moves.append( mvRJSwitch(rate_gain_B_when_A1, weight=2.0) )
+moves.append( mvRJSwitch(rate_loss_B_when_A1, weight=2.0) )
+rates[1][2] := rate_gain_B_when_A0 # 00->01
+rates[1][3] := rate_gain_A_when_B0 # 00->10
+rates[2][1] := rate_loss_B_when_A0 # 01->00
+rates[2][4] := rate_gain_A_when_B1 # 01->11
+rates[3][1] := rate_loss_A_when_B0 # 10->00
+rates[3][4] := rate_gain_B_when_A1 # 10->11
+rates[4][2] := rate_loss_A_when_B1 # 11->01
+rates[4][3] := rate_loss_B_when_A1 # 11->10
+Q_crs := fnFreeK(rates, rescaled=FALSE)
+Q_crs
+crs
+crs[1]
+crs[2]
+crs[3]
+crs[4]
+crs[38]
 q()
-# settings
-base_str= "PolyHiSSE_MAP_coen_final"
-base_tree_fn= "Willink_MAP_coen.tree"
-base_cr_fn= "Fem_colour_coen.nex"
-base_fp         = "../"
-in_fp           = base_fp + "data/processed/HiSSE/"
-code_fp= base_fp + "scripts/HiSSE/"
-out_fp          = base_fp + "output/HiSSE/"
-out_str         = base_str 
-tree_fn         = in_fp + base_tree_fn
-cr_fn           = in_fp + base_cr_fn
-# Load tree
-start_tre <- readTrees(tree_fn)[1]
-# load model
-source(code_fp + "HiSSE_module_final.Rev")
-source(code_fp + "mcmcHiSSE_MAP.Rev")
-q()
-# settings
-base_str= "PolyHiSSE_MAP_coen_final"
-base_tree_fn= "Willink_MAP_coen.tree"
-base_cr_fn= "Fem_colour_coen.nex"
-base_fp         = "../"
-in_fp           = base_fp + "data/processed/HiSSE/"
-code_fp= base_fp + "scripts/HiSSE/"
-out_fp          = base_fp + "output/HiSSE/"
-out_str         = base_str 
-tree_fn         = in_fp + base_tree_fn
-cr_fn           = in_fp + base_cr_fn
-# Load tree
-start_tre <- readTrees(tree_fn)[1]
-# load model
-source(code_fp + "HiSSE_module_final.Rev")
-# run mcmc
-source(code_fp + "mcmcHiSSE_MAP.Rev")
-# settings
-
-base_str	= "PolyHiSSE_MAP_coen_final"
-base_tree_fn	= "Willink_MAP_coen.tree"
-base_cr_fn	= "Fem_colour_coen.nex"
-
-base_fp         = "../"
-
-in_fp           = base_fp + "data/processed/HiSSE/"
-code_fp		= base_fp + "scripts/HiSSE/"
-out_fp          = base_fp + "output/HiSSE/"
-out_str         = base_str 
-
-tree_fn         = in_fp + base_tree_fn
-cr_fn           = in_fp + base_cr_fn
-
-# Load tree
-start_tre <- readTrees(tree_fn)[1]
-
-# load model
-source(code_fp + "HiSSE_module_final.Rev")
-
-# run mcmc
-source(code_fp + "mcmcHiSSE_MAP.Rev")
-source(\\"./HiSSE/HiSSE_setup_MAP_pruned.Rev\\")
-q()
-
-source(\\"./HiSSE/HiSSE_setup_MAP_pruned.Rev\\")[D[A[D[D[D[C[Cq
-source(\\"./HiSSE/HiSSE_setup_MAP_pruned.Rev\\")
-source("./HiSSE/HiSSE_setup_MAP_pruned.Rev")
-source("./HiSSE/HiSSE_setup_MAP_pruned.Rev");
-source("./HiSSE/HiSSE_setup_MAP_pruned.Rev")q()
-q()
-source("./HiSSE/HiSSE_setup_MAP_pruned.Rev");
-source("./HiSSE/HiSSE_setup_MAP_prior_pruned.Rev");
-source("./HiSSE/HiSSE_setup_MAP_pruned.Rev");
-source("./HiSSE/HiSSE_setup_MAP_prior_pruned.Rev");
-source("./HiSSE/HiSSE_setup_MAP_pruned.Rev");
-source("./HiSSE/HiSSE_setup_MAP_prior_pruned.Rev");
-source("./HiSSE/Annot_tree_prior.Rev");
-source("./HiSSE/Annot_tree.Rev");
+source("./CorrEvol/Corr_Evol_Setup.Rev");
+source("./OU/OU_Setup.Rev");
