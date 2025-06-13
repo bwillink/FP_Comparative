@@ -8,6 +8,10 @@ data/processed/HiSSE/Willink_MAP.tree
 data/raw/SupportingTableS1.ods
 data/raw/SupportingTableS1.csv
 data/raw/SupportingTableS1_V2.tsv
+data/raw/SupportingTableS1_V3.tsv
+data/raw/SupportingTableS2.tsv
+data/raw/DatasetS2.ods
+data/raw/DatasetS1.ods
 
 # do not track scripts from earlier versions (with tree uncertainty)
 scripts/data_prep
@@ -15,6 +19,8 @@ scripts/Hrm
 scripts/phylogeny
 scripts/FP_comparative.Rmd
 scripts/FP_comparative_V2.Rmd
+scripts/FP_comparative_V3.Rmd
+scripts/FP_comparative_V3.html
 scripts/HiSSE/Early_runs
 
 # do not track results from earlier versions (with tree uncertainty)
@@ -27,4 +33,21 @@ output/HiSSE/PolyHiSSE_MAP_coen_priorstoch.log
 output/HiSSE/PolyHiSSE_MAP_coen_r1stoch.log
 output/HiSSE/PolyHiSSE_MAP_coen_r2stoch.log
 output/HiSSE/PolyHiSSE_MAP_coen_r1_events.tsv 
-output/HiSSE/PolyHiSSE_MAP_coen_r2_events.tsv 
+output/HiSSE/PolyHiSSE_MAP_coen_r2_events.tsv
+output/CorrEvol/CorrEvol_HabHab_FP_corr_RJ_stoch_char_map_run_2.log
+output/CorrEvol/CorrEvol_HabHab_FP_corr_RJ_stoch_char_map_run_1.log
+output/CorrEvol/CorrEvol_HabHab_FP_corr_RJ_stoch_char_map.log
+output/CorrEvol/CorrEvol_LatLat_FP_corr_RJ_stoch_char_map_run_2.log
+output/CorrEvol/CorrEvol_LatLat_FP_corr_RJ_stoch_char_map_run_1.log
+output/CorrEvol/CorrEvol_LatLat_FP_corr_RJ_stoch_char_map.log
+output/CorrEvol/CorrEvol_HabHab_FP_corr_RJ.events.tsv
+output/CorrEvol/CorrEvol_LatLat_FP_corr_RJ.events.tsv
+output/OU/Density_OU_10_shifts_run_2.trees
+output/OU/Density_OU_10_shifts_run_1.trees
+output/OU/Density_OU_10_shifts.trees
+output/OU/Density_OU_40_shifts_run_2.trees
+output/OU/Density_OU_40_shifts_run_1.trees
+output/OU/Density_OU_40_shifts.trees
+output/OU/Density_OU_run_2.trees
+output/OU/Density_OU_run_1.trees
+output/OU/Density_OU.trees
