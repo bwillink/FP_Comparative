@@ -51,3 +51,6 @@ output/OU/Density_OU_40_shifts.trees
 output/OU/Density_OU_run_2.trees
 output/OU/Density_OU_run_1.trees
 output/OU/Density_OU.trees
+output/CorrEvol/CorrEvol_LatLat_FP_corr_RJ_stoch_char_map.log
+output/CorrEvol/CorrEvol_LatLat_FP_corr_RJ.events.tsv
+output/OU/Density_OU_40_shifts.trees
